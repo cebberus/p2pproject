@@ -6,10 +6,15 @@ import eye from '../../assets/eye.png';
 
 const AuthForm = () => {
   const [isLogin, setIsLogin] = useState(true);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [loginEmail, setLoginEmail] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
+  const [registerEmail, setRegisterEmail] = useState('');
+  const [registerPassword, setRegisterPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [isButtonDisabled, setIsButtonDisabled] = useState(true);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [acceptTerms, setAcceptTerms] = useState(false);
+  const [passwordError, setPasswordError] = useState('');
 
   const toggleForm = () => {
     setIsLogin(!isLogin);
@@ -17,16 +22,51 @@ const AuthForm = () => {
 
   const handleInputChange = (e, inputType) => {
     const value = e.target.value;
-    if (inputType === 'email') {
-      setEmail(value);
-    } else {
-      setPassword(value);
+    if (inputType === 'loginEmail') {
+      setLoginEmail(value);
+    } else if (inputType === 'loginPassword') {
+      setLoginPassword(value);
+    } else if (inputType === 'registerEmail') {
+      setRegisterEmail(value);
+    } else if (inputType === 'registerPassword') {
+      setRegisterPassword(value);
+      validatePassword(value); // Llama a la función de validación aquí
+    } else if (inputType === 'confirmPassword') {
+      setConfirmPassword(value);
     }
-    setIsButtonDisabled(!value || (inputType === 'email' ? !password : !email));
   };
+
+  const validatePassword = (password) => {
+    const hasUpperCase = /[A-Z]/.test(password);
+    const hasSpecialChar = /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]+/.test(password);
+    const hasNumber = /[0-9]/.test(password);
+
+    if (password.length < 8 || !hasUpperCase || !hasSpecialChar || !hasNumber) {
+      setPasswordError('La clave debe tener 8 caracteres mínimo, 1 mayúscula, 1 carácter especial y 1 número.');
+    } else {
+      setPasswordError('');
+    }
+  };
+
+  
+
+  // Calcula si el botón de inicio de sesión debe estar deshabilitado
+  const isLoginButtonDisabled = isLogin && (loginEmail === '' || loginPassword === '');
+  const isPasswordMismatch = registerPassword !== confirmPassword;
+  // Calcula si el botón de registro debe estar deshabilitado
+  const isRegisterButtonDisabled = !isLogin && (
+    registerEmail === '' ||
+    registerPassword === '' ||
+    confirmPassword === '' ||
+    isPasswordMismatch ||
+    !acceptTerms
+  );
 
   return (
     <div className="auth-page-container">
+      <div className="return-to-home">
+        <a href="/">Regresar al inicio</a> {/* Enlace para regresar al inicio */}
+      </div>
       <div className="auth-logo-container">
         <img src={logo} alt="React Logo" />
         {/* Otro contenido a la izquierda del formulario aquí */}
@@ -44,16 +84,16 @@ const AuthForm = () => {
                     <input
                     type="email"
                     placeholder="Correo electrónico"
-                    value={email}
-                    onChange={(e) => handleInputChange(e, 'email')}
+                    value={loginEmail}
+                    onChange={(e) => handleInputChange(e, 'loginEmail')}
                     />
                 </div>
                 <div className="password-container">
                   <input
                     type={showPassword ? 'text' : 'password'}
                     placeholder="Contraseña"
-                    value={password}
-                    onChange={(e) => handleInputChange(e, 'password')}
+                    value={loginPassword}
+                    onChange={(e) => handleInputChange(e, 'loginPassword')}
                   />
                   <img
                     src={showPassword ? eye : eyeBlock}
@@ -66,12 +106,60 @@ const AuthForm = () => {
                     <a className="forgot-pass" href="/forgot-password">He olvidado mi contraseña</a>
                 </div>
                 <div className="login-button-container">
-                    <button className="login-button" disabled={isButtonDisabled}>Iniciar Sesión</button>
+                  <button className="login-button" disabled={isLoginButtonDisabled}>Iniciar Sesión</button>
                 </div>
               </div>
             ) : (
               <div id="register-form" className="form">
-                {/* Contenido del formulario de registro */}
+                <div className="email-container">
+                  <input
+                    type="email"
+                    placeholder="Correo electrónico"
+                    value={registerEmail}
+                    onChange={(e) => handleInputChange(e, 'registerEmail')}
+                  />
+                </div>
+                <div className="password-container">
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    placeholder="Contraseña"
+                    value={registerPassword}
+                    onChange={(e) => handleInputChange(e, 'registerPassword')}
+                  />
+                  <img
+                    src={showPassword ? eye : eyeBlock}
+                    alt="Toggle Password Visibility"
+                    className="password-toggle-icon"
+                    onClick={() => setShowPassword(!showPassword)}
+                  />
+                </div>
+                {passwordError && <div className="password-error">{passwordError}</div>} {/* Muestra el mensaje de error aquí */}
+                <div className="password-container">
+                  <input
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    placeholder="Repetir Contraseña"
+                    value={confirmPassword}
+                    onChange={(e) => handleInputChange(e, 'confirmPassword')}
+                  />
+                  <img
+                    src={showConfirmPassword ? eye : eyeBlock}
+                    alt="Toggle Password Visibility"
+                    className="password-toggle-icon"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  />
+                </div>
+                {isPasswordMismatch && <div className="password-mismatch-error">Las contraseñas no coinciden</div>}
+                <div className="terms-container">
+                  <input
+                    type="checkbox"
+                    checked={acceptTerms}
+                    onChange={() => setAcceptTerms(!acceptTerms)}
+                  />
+                  <label>Al registrarse acepta los <a href="/terms">términos de servicio</a> y la <a href="/privacy">política de privacidad</a></label>
+                </div>
+                <div className="register-button-container">
+                  <button className="register-button" disabled={isRegisterButtonDisabled}>Registrarse</button>
+                </div>
               </div>
             )}
           </div>

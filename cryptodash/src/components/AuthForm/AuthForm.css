@@ -85,7 +85,7 @@
   width: 20px; /* Ajusta según el tamaño de tu imagen */
 }
 
-#login-form button {
+.login-button {
   display: block;
   margin-top: 10px; /* Ajusta según tus necesidades */
   background-color: #007BFF; /* Color de fondo del botón de registro */
@@ -100,4 +100,51 @@
 .login-button-container{
     padding-top: 30px;
     padding-bottom: 30px;
+}
+
+.terms-container {
+  display: flex;
+  align-items: center;
+  margin: 20px 0;
+}
+
+.terms-container label {
+  margin-left: 10px;
+}
+
+.register-button-container {
+  padding-top: 30px;
+  padding-bottom: 30px;
+}
+
+.register-button {
+  display: block;
+  background-color: #007BFF; /* Color de fondo del botón de registro */
+  color: #fff; /* Color del texto del botón de registro */
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  padding: 14px 20px;
+  width: 379px;
+  font-size: 16px;
+}
+
+.login-button[disabled],
+.register-button[disabled] {
+  background-color: #cccccc; /* Color gris */
+  cursor: not-allowed; /* Cambia el cursor a un ícono de "no permitido" */
+}
+
+/* Puedes ajustar el color y otros estilos según tus preferencias */
+.password-mismatch-error {
+  color: red;
+  font-size: 12px;
+  margin-top: -20px;
+  padding-bottom: 10px;
+}
+.password-error{
+  color: red;
+  font-size: 12px;
+  margin-bottom: 10px;
+  margin-top: -20px;
 }
