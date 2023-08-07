@@ -1,0 +1,103 @@
+.auth-page-container {
+    display: flex;
+    height: 100vh;
+  }
+  
+.auth-logo-container {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+.form-container {
+    flex: 1;
+    display: flex;
+    justify-content: center; /* Centra el formulario horizontalmente en el lado derecho */
+    align-items: center; /* Centra el formulario verticalmente */
+  }
+  
+.inner-form-container {
+    width: 620px; /* Ancho del contenedor del formulario */
+    border: 1px solid #ccc;
+    border-radius: 5px;
+  }
+  
+.form-header {
+    display: flex;
+    justify-content: space-around;
+    background-color: #f0f0f0;
+    border-bottom: 1px solid #ccc;
+  }
+  
+.form-header button {
+    padding: 10px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+.form-header button.active {
+    font-weight: bold;
+    background-color: #e0e0e0;
+  }
+  
+.form-content {
+    padding: 20px;
+    margin-left: 100px;
+    margin-right: 100px;
+  }
+  
+.form {
+    /* Estilos para los formularios (puedes reutilizar los estilos anteriores) */
+  }
+  
+.hidden {
+    display: none;
+  }
+  
+.password-container {
+  position: relative;
+  display: flex;
+  height: 50px;
+  margin-bottom: 20px;
+}
+
+.email-container{
+    position: relative;
+    display: flex;
+    margin-bottom: 20px;
+    margin-top: 20px;
+    height: 50px
+}
+
+.password-container input, .email-container input{
+    width: 371px;
+}
+
+.password-toggle-icon {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  width: 20px; /* Ajusta según el tamaño de tu imagen */
+}
+
+#login-form button {
+  display: block;
+  margin-top: 10px; /* Ajusta según tus necesidades */
+  background-color: #007BFF; /* Color de fondo del botón de registro */
+  color: #fff; /* Color del texto del botón de registro */
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  padding: 14px 20px;
+  width: 379px;
+  font-size: 16px;
+}
+.login-button-container{
+    padding-top: 30px;
+    padding-bottom: 30px;
+}

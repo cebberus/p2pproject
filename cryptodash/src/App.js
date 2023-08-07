@@ -1,16 +1,19 @@
+// App.js
 import React from 'react';
-import './App.css';
-import Header from './components/Header/Header';
-import Banner from './components/Banner/Banner';
-
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import Home from './views/Home'; // Importa el componente Home
+import AuthPage from './views/AuthPage';
 
 function App() {
   return (
-    <div className="App">
-      <Header />
-      <Banner />
-      {/* Otros componentes y contenido aquí */}
-    </div>
+    <Router>
+      <div className="App">
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/auth" element={<AuthPage />} />
+        </Routes>
+      </div>
+    </Router>
   );
 }
 

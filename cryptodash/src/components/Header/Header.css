@@ -28,6 +28,11 @@
   .auth-buttons {
     display: flex;
     gap: 10px; /* Espacio entre los botones */
+    
+  }
+
+  .auth-buttons a {
+    text-decoration: none;
   }
   
   .login-btn,

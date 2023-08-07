@@ -1,6 +1,7 @@
 import React from 'react';
 import './Header.css'; // Importamos los estilos que crearemos en el siguiente paso
 import logo from '../../assets/logo.svg';
+import { Link } from 'react-router-dom';
 
 
 function Header() {
@@ -17,8 +18,8 @@ function Header() {
         <a href="#ayuda">Ayuda</a>
       </nav>
       <div className="auth-buttons">
-        <button className="login-btn">Inicio de Sesión</button>
-        <button className="register-btn">Registrarse</button>
+        <Link to="/auth" className="login-btn">Inicio de Sesión</Link>
+        <Link to="/auth" className="register-btn">Registrarse</Link>
       </div>
     </header>
   );
