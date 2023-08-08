@@ -84,7 +84,7 @@ app.post('/login', async (req, res) => {
   // Crear un token JWT
   const token = jwt.sign({ userId: user._id }, 'SECRET_KEY', { expiresIn: '1h' });
 
-  res.json({ token, userId: user._id });
+  res.json({ token, userId: user._id, email: user.email });
 });
 
 app.get('/dashboard', verifyToken, (req, res) => {

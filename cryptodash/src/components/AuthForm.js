@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import './AuthForm.css';
-import logo from '../../assets/logo.svg';
-import eyeBlock from '../../assets/eye-block.png';
-import eye from '../../assets/eye.png';
+import logo from '../assets/logo.svg';
+import eyeBlock from '../assets/eye-block.png';
+import eye from '../assets/eye.png';
 import { useNavigate } from 'react-router-dom';
 
 const AuthForm = () => {
@@ -29,7 +29,9 @@ const AuthForm = () => {
     try {
       const response = await axios.post('http://localhost:3001/login', { email, password });
       const token = response.data.token; // Asume que el token se envía en la respuesta
+      const userEmail = response.data.email; // Recupera el correo electrónico desde la respuesta
       localStorage.setItem('authToken', token); // Guarda el token en el almacenamiento local
+      localStorage.setItem('userEmail', userEmail); // Almacena el correo electrónico en el almacenamiento local
       navigate('/dashboard');
     } catch (error) {
       setErrorMessage('Error al iniciar sesión. Inténtalo de nuevo.');

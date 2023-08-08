@@ -1,6 +1,6 @@
 import React from 'react';
 import './Header.css'; // Importamos los estilos que crearemos en el siguiente paso
-import logo from '../../assets/logo.svg';
+import logo from '../assets/logo.svg';
 import { Link } from 'react-router-dom';
 
 

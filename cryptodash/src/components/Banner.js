@@ -1,6 +1,6 @@
 import React from 'react';
 import './Banner.css'; // Importamos los estilos que crearemos en el siguiente paso
-import logo from '../../assets/logo.svg';
+import logo from '../assets/logo.svg';
 
 function Banner() {
     return (
