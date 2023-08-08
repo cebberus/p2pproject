@@ -2,21 +2,21 @@ import React from 'react';
 import './Dashboard.css';
 import Sidebar from '../components/Sidebar';
 import SettingsContainer from '../components/SettingsContainer';
-import avatar from '../assets/avatar.png'; // Asegúrate de importar tu avatar
+import avatar from '../assets/avatar.png';
 
 const Dashboard = () => {
+  const isVerified = localStorage.getItem('isVerified') === 'true';
   const userEmail = localStorage.getItem('userEmail');
-  const bitcoinBalance = 0.1234; // Aquí puedes obtener el saldo real del usuario
+  const bitcoinBalance = 0.1234;
   const transactions = [
     { operation: 'Enviado 0.01 BTC', date: '2021-08-01' },
     { operation: 'Recibido 0.05 BTC', date: '2021-07-30' },
-    // ... más transacciones ...
   ];
 
   return (
     <div className="dashboard-container">
       <Sidebar />
-      <div className="main-content">
+      <div className="main-content-wrapper">
         <div className="header">
           <div className="header-left">
             <img src={avatar} alt="Avatar" className="avatar" />
@@ -24,37 +24,48 @@ const Dashboard = () => {
           </div>
           <SettingsContainer />
         </div>
-        <div className="balance-container">
-          <h2>Saldo Bitcoin</h2>
-          <div className="balance">
-            <span className="bitcoin-symbol">₿</span>
-            {bitcoinBalance}
+        <div className={`main-content ${!isVerified ? 'blur' : ''}`}>
+          <div className="balance-container">
+            <h2>Saldo Bitcoin</h2>
+            <div className="balance">
+              <span className="bitcoin-symbol">₿</span>
+              {bitcoinBalance}
+            </div>
+          </div>
+          <div className="transactions-container">
+            <h2>Registro de Transacciones</h2>
+            <table>
+              <thead>
+                <tr>
+                  <th>Operaciones</th>
+                  <th>Fecha</th>
+                </tr>
+              </thead>
+              <tbody>
+                {transactions.map((transaction, index) => (
+                  <tr key={index}>
+                    <td>{transaction.operation}</td>
+                    <td>{transaction.date}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
-        <div className="transactions-container">
-          <h2>Registro de Transacciones</h2>
-          <table>
-            <thead>
-              <tr>
-                <th>Operaciones</th>
-                <th>Fecha</th>
-              </tr>
-            </thead>
-            <tbody>
-              {transactions.map((transaction, index) => (
-                <tr key={index}>
-                  <td>{transaction.operation}</td>
-                  <td>{transaction.date}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        {/* Aquí puedes agregar más contenido personalizado y funcionalidades */}
+        {!isVerified && (
+          <div className="verification-overlay">
+            <div className="verification-message">
+              <p>Verifica tu cuenta para acceder a todas las funcionalidades</p>
+              <button>Verificar cuenta</button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
 };
 
 export default Dashboard;
+
+
 

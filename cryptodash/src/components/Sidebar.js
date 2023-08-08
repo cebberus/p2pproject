@@ -1,5 +1,6 @@
 import React from 'react';
 import { useLocation } from 'react-router-dom';
+import './Sidebar.css'; // Importa el archivo CSS
 import logo from '../assets/logo.svg';
 
 const Sidebar = () => {
