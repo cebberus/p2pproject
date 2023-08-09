@@ -1,13 +1,15 @@
 // App.js
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import ProtectedRoute from './utils/ProtectedRoute';
 import Home from './views/Home'; // Importa el componente Home
 import AuthPage from './views/AuthPage';
 import Dashboard from './views/Dashboard'; // Importa el componente Dashboard
 import Enviar from './views/Enviar';
 import Recibir from './views/Recibir';
 import Intercambiar from './views/Intercambiar';
-import ProtectedRoute from './utils/ProtectedRoute';
+import VerificationPage from './views/VerificationPage';
+
 
 function App() {
   return (
@@ -21,6 +23,7 @@ function App() {
           <Route path="/enviar" element={<ProtectedRoute><Enviar /></ProtectedRoute>} />
           <Route path="/recibir" element={<ProtectedRoute><Recibir /></ProtectedRoute>} />
           <Route path="/intercambiar" element={<ProtectedRoute><Intercambiar /></ProtectedRoute>} />
+          <Route path="/verificationpage" element={<ProtectedRoute><VerificationPage /></ProtectedRoute>} />
         </Routes>
       </div>
     </Router>

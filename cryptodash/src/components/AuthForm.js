@@ -114,8 +114,8 @@ const AuthForm = () => {
         <div className="form-container">
           <div className="inner-form-container">
             <div className="form-header">
-              <button className={isLogin ? 'active' : ''} onClick={toggleForm}>Iniciar Sesión</button>
-              <button className={!isLogin ? 'active' : ''} onClick={toggleForm}>Registrarse</button>
+              <button type="button" className={isLogin ? 'active' : ''} onClick={toggleForm}>Iniciar Sesión</button>
+              <button type="button" className={!isLogin ? 'active' : ''} onClick={toggleForm}>Registrarse</button>
             </div>
             <div className="form-content">
               {isLogin ? (

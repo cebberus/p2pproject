@@ -3,8 +3,10 @@ import './Dashboard.css';
 import Sidebar from '../components/Sidebar';
 import SettingsContainer from '../components/SettingsContainer';
 import avatar from '../assets/avatar.png';
+import { useNavigate } from 'react-router-dom'; // Importa useNavigate
 
 const Dashboard = () => {
+  const navigate = useNavigate();
   const isVerified = localStorage.getItem('isVerified') === 'true';
   const userEmail = localStorage.getItem('userEmail');
   const bitcoinBalance = 0.1234;
@@ -12,6 +14,10 @@ const Dashboard = () => {
     { operation: 'Enviado 0.01 BTC', date: '2021-08-01' },
     { operation: 'Recibido 0.05 BTC', date: '2021-07-30' },
   ];
+
+  const handleVerificationClick = () => {
+    navigate('/verificationpage');
+  };
 
   return (
     <div className="dashboard-container">
@@ -56,7 +62,7 @@ const Dashboard = () => {
           <div className="verification-overlay">
             <div className="verification-message">
               <p>Verifica tu cuenta para acceder a todas las funcionalidades</p>
-              <button>Verificar cuenta</button>
+              <button onClick={handleVerificationClick}>Verificar cuenta</button>
             </div>
           </div>
         )}
