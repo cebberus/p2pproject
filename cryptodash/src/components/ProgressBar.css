@@ -1,0 +1,39 @@
+.progress-bar-container {
+    width: 100px; /* Ajusta el tamaño según tus necesidades */
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .CircularProgressbar {
+    width: 90%;
+    height: 90%;
+  }
+  
+  .CircularProgressbar-trail {
+    stroke: rgb(242, 242, 242);
+    stroke-linecap: round;
+    transform: rotate(0turn);
+    transform-origin: center center;
+  }
+  
+  .CircularProgressbar-path {
+    stroke: rgb(0, 187, 141);
+    stroke-linecap: round;
+    transform: rotate(0turn);
+    transform-origin: center center;
+    transition-duration: 1s;
+  }
+  
+  .progress-text {
+    font-size: 16px;
+    color: rgb(79, 79, 79);
+    text-align: center;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-weight: bold;
+  }
+  

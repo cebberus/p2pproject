@@ -83,6 +83,8 @@
 }
 
 .verification-message {
+  display: block;
+  margin: auto;
   background: #fff;
   padding: 20px;
   border-radius: 5px;
@@ -90,7 +92,17 @@
 }
 
 .verification-message button {
+  display: block; /* Hace que el botón sea un elemento de bloque */
+  margin: auto; /* Centra el botón horizontalmente */
   cursor: pointer;
+  background-color: #007BFF;
+  color: #fff;
+  border: none;
+  width: 50%;
+  font-size: 16px;
+  transition-duration: 0.25s;
+  padding: 14px 20px;
+  border-radius: 5px;
 }
 
 .blur {

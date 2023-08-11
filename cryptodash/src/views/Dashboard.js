@@ -61,6 +61,7 @@ const Dashboard = () => {
         {!isVerified && (
           <div className="verification-overlay">
             <div className="verification-message">
+              <h3>Gracias por tu registro !</h3>
               <p>Verifica tu cuenta para acceder a todas las funcionalidades</p>
               <button onClick={handleVerificationClick}>Verificar cuenta</button>
             </div>

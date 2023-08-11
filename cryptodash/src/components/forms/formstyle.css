@@ -1,43 +1,161 @@
-.verification-page-container {
-    display: flex;
 
-  }
-  
-  .form-container {
-    display: flex;
-    margin-top: 130px;
-  }
-  
-  .image-container {
-    width: 40%;
-    text-align: center;
-  }
-  
-  .datos-personales {
-    width: 571px;
-    padding: 20px;
-    margin: 0 auto;
-    display: flex;
-    flex-direction: column;
-  }
-  
-  .datos-personales input,
-  .datos-personales select {
-    position: relative;
-    display: flex;
-    margin-bottom: 10px;
-    height: 45px
-  }
-  
-  .buttons-container {
-    display: flex;
-    justify-content: space-between;
-  }
-  
-  .inner-form-container {
-    width: 620px; /* Ancho del contenedor del formulario */
-    border: 1px solid #ccc;
-    border-radius: 5px;
-  }
-  
-  
+
+.datos-form, .residence-form, .document-form {
+  width: 571px;
+  padding-right: 16px;
+  padding-left: 16px;
+  padding-bottom: 16px;
+  padding-top: 26px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.datos-form input,
+.datos-form select,
+.residence-form input,
+.residence-form select,
+.document-form input,
+.document-form select {
+  position: relative;
+  display: flex;
+  margin-bottom: 10px;
+  height: 45px;
+  padding: 0 10px; /* Ajusta el relleno según tus necesidades */
+  border: 1px solid #ccc; /* Asegúrate de que el borde sea consistente */
+  border-radius: 4px; /* Puedes ajustar el radio del borde según tus preferencias */
+  box-sizing: border-box; /* Esto asegura que el relleno y el borde estén incluidos en la altura total */
+}
+
+
+.inner-form-container {
+  width: 620px; /* Ancho del contenedor del formulario */
+  border: 0px solid #ccc;
+  border-radius: 5px;
+}
+
+.title-form-container{
+  font-size: 20px;
+}
+
+.document-upload-form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.image-box {
+  width: 100%;
+  height: 200px;
+  border: 1px solid #ccc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  background-color: #f0f0f0; /* Fondo grisáceo */
+}
+
+.image-box img {
+  max-width: 100%; /* Asegura que la imagen se ajuste al ancho del contenedor */
+  max-height: 100%; /* Asegura que la imagen se ajuste a la altura del contenedor */
+  object-fit: contain; /* Mantiene la proporción de la imagen */
+}
+
+.upload-icon {
+  color: #666;
+  font-size: 20px;
+}
+
+.popup-upload-frontimage {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 520px; /* Ancho del popup */
+  background: #ffffff; /* Fondo blanco */
+  border: 1px solid #ccc; /* Borde */
+  border-radius: 5px; /* Bordes redondeados */
+  padding: 16px; /* Relleno */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 1001; /* Asegura que el popup esté por encima de otros elementos */
+}
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5); /* Fondo negro con opacidad */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000; /* Asegura que la capa de superposición esté por encima de otros elementos */
+}
+
+.popup-upload-frontimage img {
+  max-width: 100%; /* Asegura que la imagen se ajuste al ancho del popup */
+  height: auto; /* Mantiene la proporción de la imagen */
+}
+.buttons-container-popup {
+  display: flex;
+  justify-content: space-between;
+  width: 75%; /* Ajusta al ancho del formulario */
+  padding: 20px 0; /* Espacio en la parte superior e inferior */
+  margin-top: 0px; /* Reducir el margen superior para disminuir el espacio */
+  margin-bottom: 20px; /* Puedes ajustar según tus necesidades */
+  margin-left: auto;
+  margin-right: auto; /* Centra los botones */
+}
+
+.back-button-popup, .next-button-popup {
+  width: 100%;
+  font-size: 16px;
+  transition-duration: 0.25s;
+  padding: 14px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.back-button-popup {
+  background-color: #fff;
+  color: rgb(79, 79, 79);
+  border: 1px solid rgb(189, 189, 189); /* Ajusta el borde */
+  margin-right: 10px;
+}
+
+.next-button-popup {
+  background-color: #007BFF;
+  color: #fff;
+  border: none;
+  margin-left: 10px;
+}
+
+.popup-upload-frontimage input[type="file"] {
+  margin-top: 10px; /* Espacio encima del input de archivo */
+}
+
+.image-container-popup {
+  width: 100%; /* Ancho del contenedor de la imagen */
+  height: 200px; /* Altura del contenedor de la imagen */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f0f0f0; /* Fondo grisáceo */
+  border: 1px solid #ccc; /* Borde */
+  margin-bottom: 10px; /* Espacio debajo del contenedor */
+}
+
+.placeholder-image-popup {
+  width: 100%; /* Ancho del contenedor grisáceo */
+  height: 100%; /* Altura del contenedor grisáceo */
+  background-color: #f0f0f0; /* Fondo grisáceo */
+}
+
+.popup-upload-frontimage img {
+  max-width: 100%; /* Asegura que la imagen se ajuste al ancho del contenedor */
+  max-height: 100%; /* Asegura que la imagen se ajuste a la altura del contenedor */
+  object-fit: contain; /* Mantiene la proporción de la imagen */
+}
