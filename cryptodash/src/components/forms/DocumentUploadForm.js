@@ -82,7 +82,7 @@ const DocumentUploadForm = () => {
   };
   
   const handleTakeSelfie = () => {
-    setTakingSelfie(true);
+    setTakingSelfie(true); // Establece takingSelfie en true
     navigator.mediaDevices.getUserMedia({ video: true })
       .then(stream => {
         videoRef.current.srcObject = stream;
@@ -127,6 +127,7 @@ const DocumentUploadForm = () => {
   const handleRemoveSelfieImage = (e) => {
     e.stopPropagation(); // Detiene la propagación del evento de clic
     setSelfieImage(null);
+    setPhotoTaken(false);
     setFormData({
       ...formData,
       documentUploadData: {
@@ -237,36 +238,38 @@ const DocumentUploadForm = () => {
             </div>
           </div>
         )}
-        {showSelfiePopup && (
-          <div className="overlay" onClick={() => handleClosePopup(setShowSelfiePopup)}>
-            <div className="popup-upload-selfie" onClick={e => e.stopPropagation()}>
-              <button className="close-button-popup" onClick={() => handleClosePopup(setShowSelfiePopup)}>X</button>
-              <h4>{takingSelfie ? "Tomar una Selfie" : "Selfie"}</h4>
-              <div className="image-container-popup">
-                {takingSelfie ? (
-                  <video ref={videoRef} autoPlay style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}></video>
-                ) : (
-                  <img src={selfieImage} alt="Selfie" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
-                )}
-              </div>
-              <div className="buttons-container-popup">
-                {photoTaken ? (
-                  <button className="back-button-popup" onClick={handleRetakeSelfie}>Tomar nueva foto</button>
-                ) : (
-                  <button className="back-button-popup" onClick={() => handleClosePopup(setShowSelfiePopup)}>Atrás</button>
-                )}
-                {takingSelfie ? (
-                  <button className="next-button-popup" onClick={handleCaptureSelfie}>Tomar Foto</button>
-                ) : (
-                  <button className="next-button-popup" onClick={() => handleClosePopup(setShowSelfiePopup)}>Siguiente</button>
-                )}
-              </div>
+      {showSelfiePopup && (
+        <div className="overlay" onClick={() => handleClosePopup(setShowSelfiePopup)}>
+          <div className="popup-upload-selfie" onClick={e => e.stopPropagation()}>
+            <button className="close-button-popup" onClick={() => handleClosePopup(setShowSelfiePopup)}>X</button>
+            <h4>{takingSelfie ? "Tomar una Selfie" : "Selfie"}</h4>
+            <div className="image-container-popup">
+              {takingSelfie ? (
+                <video ref={videoRef} autoPlay style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}></video>
+              ) : (
+                <img src={selfieImage} alt="Selfie" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
+              )}
+            </div>
+            <div className="buttons-container-popup">
+              {photoTaken ? (
+                <button className="back-button-popup" onClick={handleRetakeSelfie}>Tomar nueva foto</button>
+              ) : (
+                <button className="back-button-popup" onClick={() => handleClosePopup(setShowSelfiePopup)}>Atrás</button>
+              )}
+              {takingSelfie ? (
+                <button className="next-button-popup" onClick={handleCaptureSelfie}>Tomar Foto</button>
+              ) : photoTaken ? (
+                <button className="next-button-popup" onClick={() => handleClosePopup(setShowSelfiePopup)}>Finalizar</button> // Botón para finalizar
+              ) : (
+                <button className="next-button-popup" onClick={handleTakeSelfie}>Siguiente</button>
+              )}
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
-  );
+  </div>
+);
 };
 
 export default DocumentUploadForm;
