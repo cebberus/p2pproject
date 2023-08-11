@@ -1,0 +1,47 @@
+.verification-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    margin-top: 125px; /* Ajusta este valor según la altura de tu encabezado */
+  }
+  
+  .verification-message {
+    width: 25%;
+    text-align: center;
+    display: block;
+    margin: auto;
+    background: #fff;
+    padding: 30px;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  }
+  
+  .verification-message h3{
+    margin-top: 0px;
+  }
+  
+  .verification-message button {
+    display: block; /* Hace que el botón sea un elemento de bloque */
+    margin: auto; /* Centra el botón horizontalmente */
+    cursor: pointer;
+    background-color: #007BFF;
+    color: #fff;
+    border: none;
+    width: 50%;
+    font-size: 16px;
+    transition-duration: 0.25s;
+    padding: 14px 20px;
+    border-radius: 5px;
+  }
+  
+  .blur {
+    filter: blur(5px);
+    pointer-events: none;
+  }

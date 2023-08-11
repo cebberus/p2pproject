@@ -31,12 +31,18 @@ const ResidenceinitialData = {
     fechaEmisionDocumento: ''
   };
 
+  const documentUploadInitialData = {
+    frontImage: null,
+    backImage: null,
+    selfieImage: null,
+  }
+
 export const FormDataProvider = ({ children }) => {
   const [formData, setFormData] = useState({
     personalData: PersonalinitialData,
     residenceData: ResidenceinitialData,
     documentData: documentinitialData,
-    documentUploadData: {}
+    documentUploadData: documentUploadInitialData
   });
 
   return (

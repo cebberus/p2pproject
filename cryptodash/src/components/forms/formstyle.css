@@ -1,5 +1,3 @@
-
-
 .datos-form, .residence-form, .document-form {
   width: 571px;
   padding-right: 16px;
@@ -21,20 +19,19 @@
   display: flex;
   margin-bottom: 10px;
   height: 45px;
-  padding: 0 10px; /* Ajusta el relleno según tus necesidades */
-  border: 1px solid #ccc; /* Asegúrate de que el borde sea consistente */
-  border-radius: 4px; /* Puedes ajustar el radio del borde según tus preferencias */
-  box-sizing: border-box; /* Esto asegura que el relleno y el borde estén incluidos en la altura total */
+  padding: 0 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
 }
 
-
 .inner-form-container {
-  width: 620px; /* Ancho del contenedor del formulario */
+  width: 620px;
   border: 0px solid #ccc;
   border-radius: 5px;
 }
 
-.title-form-container{
+.title-form-container {
   font-size: 20px;
 }
 
@@ -45,15 +42,11 @@
 }
 
 .image-upload-section {
-  width: 100%; /* Ancho completo */
+  width: 100%;
   display: flex;
   flex-direction: column;
-  align-items: right;
-  margin-bottom: 30px; /* Espacio entre los cuadros */
-}
-
-.image-upload-section p{
-padding-bottom: 10px;
+  align-items: center;
+  margin-bottom: 30px;
 }
 
 .image-upload-label {
@@ -64,69 +57,102 @@ padding-bottom: 10px;
 }
 
 .image-box {
-  width: 100%;
+  position: relative;
+  width: 571px; /* Ancho ajustado */
   height: 200px;
   border: 1px solid #ccc;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  background-color: #f0f0f0; /* Fondo grisáceo */
+  background-color: #f0f0f0;
 }
 
 .image-box img {
-  max-width: 100%; /* Asegura que la imagen se ajuste al ancho del contenedor */
-  max-height: 100%; /* Asegura que la imagen se ajuste a la altura del contenedor */
-  object-fit: contain; /* Mantiene la proporción de la imagen */
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
 }
 
 .upload-icon {
   color: #666;
   font-size: 20px;
 }
+.remove-image-button {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  background-color: #007BFF; /* Color de fondo azul para coincidir con el botón "Siguiente" */
+  color: white;
+  border: none;
+  font-size: 12px;
+  cursor: pointer;
+  padding: 5px 10px;
+  border-radius: 5px; /* Bordes redondeados para un aspecto moderno */
+  transition: background-color 0.3s ease; /* Transición suave para el efecto de desplazamiento */
+}
 
-.popup-upload-frontimage, .popup-upload-backimage {
+.remove-image-button:hover {
+  background-color: #0056b3; /* Color de fondo más oscuro en el desplazamiento */
+}
+
+
+.popup-upload-frontimage, .popup-upload-backimage, .popup-upload-selfie {
   position: fixed;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 520px; /* Ancho del popup */
-  background: #ffffff; /* Fondo blanco */
-  border: 1px solid #ccc; /* Borde */
-  border-radius: 5px; /* Bordes redondeados */
-  padding: 16px; /* Relleno */
+  width: 520px;
+  background: #ffffff;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  padding: 16px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  z-index: 1001; /* Asegura que el popup esté por encima de otros elementos */
+  z-index: 1001;
 }
+
+.close-button-popup {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+
 .overlay {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.5); /* Fondo negro con opacidad */
+  background-color: rgba(0, 0, 0, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000; /* Asegura que la capa de superposición esté por encima de otros elementos */
+  z-index: 1000;
 }
 
-.popup-upload-frontimage img, .popup-upload-backimage img{
-  max-width: 100%; /* Asegura que la imagen se ajuste al ancho del popup */
-  height: auto; /* Mantiene la proporción de la imagen */
+.popup-upload-frontimage img, .popup-upload-backimage img, .popup-upload-selfie video {
+  max-width: 100%;
+  height: auto;
+  object-fit: contain;
 }
+
 .buttons-container-popup {
   display: flex;
   justify-content: space-between;
-  width: 75%; /* Ajusta al ancho del formulario */
-  padding: 20px 0; /* Espacio en la parte superior e inferior */
-  margin-top: 0px; /* Reducir el margen superior para disminuir el espacio */
-  margin-bottom: 20px; /* Puedes ajustar según tus necesidades */
+  width: 75%;
+  padding: 20px 0;
+  margin-top: 0px;
+  margin-bottom: 20px;
   margin-left: auto;
-  margin-right: auto; /* Centra los botones */
+  margin-right: auto;
 }
 
 .back-button-popup, .next-button-popup {
@@ -141,7 +167,7 @@ padding-bottom: 10px;
 .back-button-popup {
   background-color: #fff;
   color: rgb(79, 79, 79);
-  border: 1px solid rgb(189, 189, 189); /* Ajusta el borde */
+  border: 1px solid rgb(189, 189, 189);
   margin-right: 10px;
 }
 
@@ -153,24 +179,18 @@ padding-bottom: 10px;
 }
 
 .image-container-popup {
-  width: 60%; /* Ancho del contenedor de la imagen */
-  height: 200px; /* Altura del contenedor de la imagen */
+  width: 60%;
+  height: 200px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #f0f0f0; /* Fondo grisáceo */
-  border: 1px solid #ccc; /* Borde */
-  margin-bottom: 10px; /* Espacio debajo del contenedor */
+  background-color: #f0f0f0;
+  border: 1px solid #ccc;
+  margin-bottom: 10px;
 }
 
 .placeholder-image-popup {
-  width: 100%; /* Ancho del contenedor grisáceo */
-  height: 100%; /* Altura del contenedor grisáceo */
-  background-color: #f0f0f0; /* Fondo grisáceo */
-}
-
-.popup-upload-frontimage img {
-  max-width: 100%; /* Asegura que la imagen se ajuste al ancho del contenedor */
-  max-height: 100%; /* Asegura que la imagen se ajuste a la altura del contenedor */
-  object-fit: contain; /* Mantiene la proporción de la imagen */
+  width: 100%;
+  height: 100%;
+  background-color: #f0f0f0;
 }

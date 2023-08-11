@@ -2,10 +2,9 @@ import React from 'react';
 import Sidebar from '../components/Sidebar';
 import SettingsContainer from '../components/SettingsContainer';
 import avatar from '../assets/avatar.png';
+import VerificationOverlay from '../components/VerificationOverlay';
 
 const Enviar = () => {
-const isVerified = localStorage.getItem('isVerified') === 'true';
-
   return (
     <div className="dashboard-container">
       <Sidebar />
@@ -17,24 +16,18 @@ const isVerified = localStorage.getItem('isVerified') === 'true';
           </div>
           <SettingsContainer />
         </div>
-        <div className={`main-content ${!isVerified ? 'blur' : ''}`}>
+        <div className="main-content">
           <div className="send-container">
             {/* Aquí puedes agregar el contenido y las funcionalidades específicas de la página "Enviar" */}
           </div>
         </div>
-        {!isVerified && (
-          <div className="verification-overlay">
-            <div className="verification-message">
-              <p>Verifica tu cuenta para acceder a todas las funcionalidades</p>
-              <button>Verificar cuenta</button>
-            </div>
-          </div>
-        )}
+        <VerificationOverlay />
       </div>
     </div>
   );
 };
 
 export default Enviar;
+
 
 
