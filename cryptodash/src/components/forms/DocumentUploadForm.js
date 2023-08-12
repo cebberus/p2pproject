@@ -1,7 +1,7 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect,useRef, useState } from 'react';
 import { useFormData } from './FormDataContext';
 
-const DocumentUploadForm = () => {
+const DocumentUploadForm = ({ validateForm }) => {
   const { formData, setFormData } = useFormData();
   const [frontImage, setFrontImage] = useState(formData.documentUploadData.frontImage);
   const [backImage, setBackImage] = useState(formData.documentUploadData.backImage);
@@ -14,6 +14,11 @@ const DocumentUploadForm = () => {
   const frontFileInputRef = useRef(null);
   const backFileInputRef = useRef(null);
   const [photoTaken, setPhotoTaken] = useState(false);
+
+  useEffect(() => {
+    const isValid = frontImage && backImage && selfieImage;
+    validateForm(isValid);
+  }, [frontImage, backImage, selfieImage, validateForm]);
 
 
   const handleClosePopup = (popupSetter) => {
@@ -56,12 +61,21 @@ const DocumentUploadForm = () => {
     const file = e.target.files[0];
     const reader = new FileReader();
     reader.onloadend = () => {
-      setBackImage(reader.result);
+      const newImage = reader.result;
+      setBackImage(newImage);
+      setFormData({
+        ...formData,
+        documentUploadData: {
+          ...formData.documentUploadData,
+          backImage: newImage, // Agrega esta línea
+        },
+      });
     };
     if (file) {
       reader.readAsDataURL(file);
     }
   };
+  
 
   const handleCaptureSelfie = () => {
     if (!videoRef.current || !videoRef.current.srcObject) {
@@ -79,7 +93,17 @@ const DocumentUploadForm = () => {
     setTakingSelfie(false);
     videoRef.current.srcObject.getTracks().forEach(track => track.stop());
     setPhotoTaken(true);
+  
+    // Actualiza el estado de formData con la nueva imagen de la selfie
+    setFormData({
+      ...formData,
+      documentUploadData: {
+        ...formData.documentUploadData,
+        selfieImage: image, // Agrega esta línea
+      },
+    });
   };
+  
   
   const handleTakeSelfie = () => {
     setTakingSelfie(true); // Establece takingSelfie en true

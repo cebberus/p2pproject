@@ -6,6 +6,7 @@ import PersonalDataForm from '../components/forms/PersonalDataForm';
 import ResidenceForm from '../components/forms/ResidenceForm';
 import DocumentForm from '../components/forms/DocumentForm';
 import DocumentUploadForm from '../components/forms/DocumentUploadForm';
+import DeclarationsForm from '../components/forms/DeclarationsForm';
 import ProgressBar from '../components/ProgressBar';
 import logo from '../assets/logo.svg'; // Importar el logo
 import './VerificationPage.css';
@@ -76,9 +77,11 @@ const VerificationPage = () => {
             {step === 2 && <ResidenceForm validateForm={validateForm}/>}
             {step === 3 && <DocumentForm validateForm={validateForm}/>}
             {step === 4 && <DocumentUploadForm validateForm={validateForm}/>}
+            {step === 5 && <DeclarationsForm validateForm={validateForm}/>}
             <div className="buttons-container">
               <button type="button" className="back-button-verification" onClick={handleBack}>{step > 1 ? 'Atrás' : 'Cancelar'}</button>
-              <button type="button"className="next-button-verification" onClick={handleNext} disabled={!isFormValid}>Siguiente</button>
+              <button type="button"className="next-button-verification" onClick={handleNext} disabled={!isFormValid}>{step === 5 ? 'Finalizar' : 'Siguiente'}</button>
+              
             </div>
           </div>
         </div>

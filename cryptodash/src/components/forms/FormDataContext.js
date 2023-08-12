@@ -36,13 +36,28 @@ const ResidenceinitialData = {
     backImage: null,
     selfieImage: null,
   }
+  const declarationsInitialData = {
+    isPEP: null,
+    isPEPYou: null,
+    declaration1: false,
+    declaration2: false,
+    pepDetails: {
+      nombres: '',
+      apellidos: '',
+      numeroDocumento: '',
+      cargo: ''
+    }
+  };
+  
+  
 
 export const FormDataProvider = ({ children }) => {
   const [formData, setFormData] = useState({
     personalData: PersonalinitialData,
     residenceData: ResidenceinitialData,
     documentData: documentinitialData,
-    documentUploadData: documentUploadInitialData
+    documentUploadData: documentUploadInitialData,
+    declarationsData: JSON.parse(localStorage.getItem('declarationsData')) || declarationsInitialData,
   });
 
   return (

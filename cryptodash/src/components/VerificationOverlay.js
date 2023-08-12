@@ -3,10 +3,10 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import './VerificationOverlay.css';
 
-
+export const isUserVerified = () => localStorage.getItem('isVerified') === 'true';
 const VerificationOverlay = () => {
   const navigate = useNavigate();
-  const isVerified = localStorage.getItem('isVerified') === 'true';
+  const isVerified = isUserVerified();
 
   const handleVerificationClick = () => {
     navigate('/verificationpage');

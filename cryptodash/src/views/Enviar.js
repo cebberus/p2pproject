@@ -2,9 +2,13 @@ import React from 'react';
 import Sidebar from '../components/Sidebar';
 import SettingsContainer from '../components/SettingsContainer';
 import avatar from '../assets/avatar.png';
-import VerificationOverlay from '../components/VerificationOverlay';
+import VerificationOverlay, { isUserVerified } from '../components/VerificationOverlay';
+import './CommonStylesMenus.css';
+
+
 
 const Enviar = () => {
+  const isVerified = isUserVerified();
   return (
     <div className="dashboard-container">
       <Sidebar />
@@ -16,8 +20,9 @@ const Enviar = () => {
           </div>
           <SettingsContainer />
         </div>
-        <div className="main-content">
+        <div className={`main-content ${!isVerified ? 'blur' : ''}`}>
           <div className="send-container">
+            <h2>SEND</h2>
             {/* Aquí puedes agregar el contenido y las funcionalidades específicas de la página "Enviar" */}
           </div>
         </div>

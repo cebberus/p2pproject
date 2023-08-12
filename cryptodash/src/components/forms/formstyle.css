@@ -1,3 +1,5 @@
+
+
 .datos-form, .residence-form, .document-form {
   width: 571px;
   padding-right: 16px;
@@ -17,7 +19,7 @@
 .document-form select {
   position: relative;
   display: flex;
-  margin-bottom: 10px;
+  margin-top: 10px;
   height: 45px;
   padding: 0 10px;
   border: 1px solid #ccc;
@@ -29,6 +31,10 @@
   width: 620px;
   border: 0px solid #ccc;
   border-radius: 5px;
+}
+
+.inner-form-container h3, h4{
+  padding-left: 23px;
 }
 
 .title-form-container {
@@ -194,3 +200,119 @@
   height: 100%;
   background-color: #f0f0f0;
 }
+
+
+.error-message {
+  text-align: right;
+  font-weight: 610;
+  color: red;
+  font-size: 12px;
+}
+
+.input-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin-top: 10px;
+  height: 45px;
+  padding: 0 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+.input-container input,
+.input-container select {
+  flex-grow: 1;
+  height: calc(100% - 2px); /* Resta 2px para asegurar que el borde inferior sea visible */
+  border: none; /* Elimina el borde del input para evitar el doble borde */
+  outline: none;
+  padding: 0; /* Elimina el padding para que el texto esté alineado con el contenedor */
+  margin: 1px 0; /* Añade un margen para compensar la reducción de la altura */
+}
+
+.error-icon {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px; /* Puedes ajustar el tamaño según tus necesidades */
+  height: 20px;
+}
+
+.error-border {
+  border: 1px solid red !important;
+  color: red; /* Cambia el color del texto a rojo */
+}
+
+.input-container.error-border select {
+  color: red; /* Cambia el color del texto a rojo */
+}
+
+/* Estilo para cambiar el color del marcador de posición a rojo cuando hay un error */
+.input-container.error-border input::placeholder,
+.input-container.error-border select::placeholder {
+  color: red;
+}
+
+.success-border {
+  border: 1px solid green !important;
+}
+
+.success-icon {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+}
+
+.declarations, .pep-options, .pep-you-options {
+  margin-left: 23px;
+}
+
+.declarations {
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+.declaration-container {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.declaration-container input[type="checkbox"] {
+  display: none;
+}
+
+.declaration-container label {
+  flex-grow: 1;
+  font-size: 14px;
+  text-align: justify;
+  font-weight: 610;
+  color: rgb(119, 119, 119);
+  line-height: 1;
+  position: relative;
+  padding-left: 40px;
+  cursor: pointer;
+}
+
+.declaration-container label::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 25px;
+  height: 25px;
+  background-image: url(../../assets/checkbox.png);
+  background-size: cover;
+}
+
+.declaration-container input[type="checkbox"]:checked + label::before {
+  background-image: url(../../assets/checkbox-selected.png);
+}
+
+

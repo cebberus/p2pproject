@@ -1,39 +1,4 @@
-.dashboard-container {
-  display: flex;
-  width: 100%;
-  height: 100vh;
-}
 
-.main-content-wrapper {
-  position: relative;
-  flex: 1;
-}
-
-.main-content {
-  flex: 1;
-  padding: 20px;
-  background-color: #ecf0f1;
-  position: relative;
-}
-
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px;
-  background-color: #ecf0f1;
-}
-
-.header-left {
-  display: flex;
-  align-items: center;
-}
-
-.avatar {
-  width: 50px;
-  border-radius: 50%;
-  margin-right: 10px;
-}
 
 .balance-container {
   background-color: #fff;
@@ -66,10 +31,4 @@
 
 .transactions-container th {
   background-color: #f2f2f2;
-}
-
-
-.blur {
-  filter: blur(5px);
-  pointer-events: none;
 }

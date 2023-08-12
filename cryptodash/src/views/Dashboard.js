@@ -1,9 +1,10 @@
 import React from 'react';
 import './Dashboard.css';
+import './CommonStylesMenus.css';
 import Sidebar from '../components/Sidebar';
 import SettingsContainer from '../components/SettingsContainer';
 import avatar from '../assets/avatar.png';
-import VerificationOverlay from '../components/VerificationOverlay'; // Importa el componente
+import VerificationOverlay, { isUserVerified } from '../components/VerificationOverlay';
 
 const Dashboard = () => {
   const userEmail = localStorage.getItem('userEmail');
@@ -12,6 +13,7 @@ const Dashboard = () => {
     { operation: 'Enviado 0.01 BTC', date: '2021-08-01' },
     { operation: 'Recibido 0.05 BTC', date: '2021-07-30' },
   ];
+  const isVerified = isUserVerified();
   return (
     <div className="dashboard-container">
       <Sidebar />
@@ -23,7 +25,7 @@ const Dashboard = () => {
           </div>
           <SettingsContainer />
         </div>
-        <div className="main-content">
+        <div className={`main-content ${!isVerified ? 'blur' : ''}`}>
           <div className="balance-container">
             <h2>Saldo Bitcoin</h2>
             <div className="balance">

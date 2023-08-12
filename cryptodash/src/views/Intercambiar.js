@@ -2,9 +2,12 @@ import React from 'react';
 import Sidebar from '../components/Sidebar';
 import SettingsContainer from '../components/SettingsContainer';
 import avatar from '../assets/avatar.png';
-import VerificationOverlay from '../components/VerificationOverlay';
+import VerificationOverlay, { isUserVerified } from '../components/VerificationOverlay';
+import './CommonStylesMenus.css';
+
 
 const Intercambiar = () => {
+  const isVerified = isUserVerified();
   return (
     <div className="dashboard-container">
       <Sidebar />
@@ -16,8 +19,9 @@ const Intercambiar = () => {
           </div>
           <SettingsContainer />
         </div>
-        <div className="main-content">
-          <div className="send-container">
+        <div className={`main-content ${!isVerified ? 'blur' : ''}`}>
+          <div className="to-exchange-container">
+          <h2>TO EXCHANGE</h2>
             {/* Aquí puedes agregar el contenido y las funcionalidades específicas de la página "Intercambiar" */}
           </div>
         </div>
