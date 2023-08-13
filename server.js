@@ -1,5 +1,7 @@
+//server.js
 const crypto = require('crypto');
 const express = require('express');
+const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const bcrypt = require('bcryptjs');
@@ -7,7 +9,6 @@ const jwt = require('jsonwebtoken');
 const ecc = require('tiny-secp256k1');
 const bitcoin = require('bitcoinjs-lib');
 const { BIP32Factory } = require('bip32');
-const bip39 = require('bip39');
 
 const bip32 = BIP32Factory(ecc);
 const testnet = bitcoin.networks.testnet;
@@ -16,7 +17,8 @@ const testnet = bitcoin.networks.testnet;
 const app = express();
 
 // Middleware
-app.use(express.json());
+app.use(bodyParser.json({ limit: '50mb' })); // Aumenta el límite aquí
+app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 app.use(cors());
 
 // Middleware para verificar el token
@@ -45,10 +47,22 @@ mongoose.connection.once('open', () => {
 const UserSchema = new mongoose.Schema({
   email: String,
   password: String,
-  isVerified: { type: Boolean, default: false }, // Campo de verificación
+  verificationStatus: { type: String, enum: ['no verificado', 'verificado', 'en revisión'], default: 'no verificado' }, // Cambio aquí
 });
 
 const User = mongoose.model('User', UserSchema);
+
+const VerificationSchema = new mongoose.Schema({
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  personalData: Object,
+  residenceData: Object,
+  documentData: Object,
+  documentUploadData: Object,
+  declarationsData: Object,
+});
+
+const Verification = mongoose.model('Verification', VerificationSchema);
+
 
 const WalletSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
@@ -85,7 +99,7 @@ app.post('/register', async (req, res) => {
   const user = new User({
     email,
     password: hashedPassword,
-    isVerified: false,
+    verificationStatus: 'no verificado', // Cambio aquí
   });
 
   // Guardar el usuario en la base de datos
@@ -113,8 +127,9 @@ app.post('/login', async (req, res) => {
   // Crear un token JWT
   const token = jwt.sign({ userId: user._id }, 'SECRET_KEY', { expiresIn: '1h' });
 
-  res.json({ token, userId: user._id, email: user.email, isVerified: user.isVerified });
+  res.json({ token, userId: user._id, email: user.email, verificationStatus: user.verificationStatus }); // Cambio aquí
 });
+
 
 app.post('/logout', verifyToken, (req, res) => {
   // Aquí puedes invalidar el token si estás usando una lista negra de tokens o alguna otra lógica
@@ -123,17 +138,101 @@ app.post('/logout', verifyToken, (req, res) => {
   res.json({ message: 'Sesión cerrada con éxito' });
 });
 
+app.post('/api/saveUserData', verifyToken, async (req, res) => {
+  const userId = req.user.userId;
+  const verificationData = req.body;
+  const verification = new Verification({
+    userId,
+    ...verificationData,
+  });
+
+  await verification.save();
+  await User.findByIdAndUpdate(userId, { verificationStatus: 'en revisión' });
+
+  res.status(201).json({ message: 'Datos guardados con éxito' });
+});
+
+
+app.get('/api/verificationStatus', verifyToken, async (req, res) => {
+  const userId = req.user.userId;
+  const user = await User.findById(userId);
+  res.json({ status: user.verificationStatus });
+});
+
+
+app.get('/formData', verifyToken, async (req, res) => {
+  const userId = req.user.userId;
+
+  // Buscar en la colección de datos de verificación
+  const verificationData = await Verification.findOne({ userId });
+
+  if (!verificationData) {
+    return res.status(404).json({ message: 'Datos no encontrados' });
+  }
+
+  const {
+    personalData,
+    residenceData,
+    documentData,
+    documentUploadData,
+    declarationsData,
+    pepDetails,
+  } = verificationData;
+
+  const response = {
+    personalInformation: {
+      nombres: personalData.nombres,
+      apellidos: personalData.apellidos,
+      paisNacimiento: personalData.paisNacimiento,
+      fechaNacimiento: personalData.fechaNacimiento,
+      sexo: personalData.sexo,
+      profesion: personalData.profesion,
+      estadoCivil: personalData.estadoCivil,
+    },
+    residenceInformation: {
+      paisResidencia: residenceData.paisResidencia,
+      RegionProvincia: residenceData.RegionProvincia,
+      ciudad: residenceData.ciudad,
+      direccionResidencia: residenceData.direccionResidencia,
+      telefono: residenceData.telefono,
+    },
+    documentInformation: {
+      tipoDocumento: documentData.tipoDocumento,
+      numeroDocumento: documentData.numeroDocumento,
+      paisEmisorDocumento: documentData.paisEmisorDocumento,
+      fechaEmisionDocumento: documentData.fechaEmisionDocumento,
+    },
+    documentUploadInformation: {
+      frontImage: documentUploadData.frontImage,
+      backImage: documentUploadData.backImage,
+      selfieImage: documentUploadData.selfieImage,
+    },
+    declarationsInformation: {
+      isPEP: declarationsData.isPEP,
+      isPEPYou: declarationsData.isPEPYou,
+      declaration1: declarationsData.declaration1,
+      declaration2: declarationsData.declaration2,
+    },
+    pepDetails: pepDetails,
+  };
+
+  res.json(response);
+});
+
+
+
+
 
 app.get('/dashboard', verifyToken, (req, res) => {
   res.json({ message: 'Bienvenido al dashboard', user: req.user });
 });
 
 app.post('/verify', verifyToken, async (req, res) => {
-  const { userId } = req.user;
+  const userId = req.user.userId;
   const verificationData = req.body; // Aquí puedes tomar los datos del formulario de verificación
   // Aquí puedes manejar la lógica para validar los datos de verificación
-  // Actualizar el campo isVerified del usuario
-  await User.findByIdAndUpdate(userId, { isVerified: true });
+  // Actualizar el campo verificationStatus del usuario
+  await User.findByIdAndUpdate(userId, { verificationStatus: 'verificado' }); // Cambio aquí
   // Opcionalmente, puedes guardar los datos de verificación en otra colección
   res.json({ message: 'Cuenta verificada con éxito' });
 });

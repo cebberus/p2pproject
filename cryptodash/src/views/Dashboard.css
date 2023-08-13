@@ -1,4 +1,4 @@
-
+/*Dashboard.css*/
 
 .balance-container {
   background-color: #fff;
@@ -31,4 +31,35 @@
 
 .transactions-container th {
   background-color: #f2f2f2;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px; /* Espacio entre los elementos */
+}
+
+/* Estilo para la imagen de estado de verificación */
+.verification-status-image {
+  width: 20px; /* Tamaño de la imagen, ajusta este valor según tus necesidades */
+}
+
+
+/* Estilo para el texto de estado de verificación */
+.header-left span {
+  font-size: 14px; /* Tamaño del texto */
+  font-weight: bold; /* Negrita */
+}
+
+/* Colores específicos para cada estado */
+.header-left span:is(.verified) {
+  color: green; /* Texto verde para "Cuenta verificada" */
+}
+
+.header-left span:is(.in-verification) {
+  color: #ffa500; /* Texto amarillento para "Cuenta en revisión" */
+}
+
+.header-left span:is(.not-verified) {
+  color: red; /* Texto rojo para "Sin verificar" */
 }

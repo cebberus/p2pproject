@@ -113,4 +113,41 @@
     margin-top: 0px;
   }
   
+
+  .popup-start-verification .popup-content {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 10px; /* Opcional: para bordes redondeados */
+    width: 25%;
+    text-align: center;
+  }
+  .popup-start-verification {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+  }
+  
+  .popup-start-verification  p {
+    margin-bottom: 20px;
+  }
+  
+  .popup-start-verification  button {
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+  }
+
+
+  
+  
   
