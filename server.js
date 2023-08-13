@@ -222,20 +222,30 @@ app.get('/formData', verifyToken, async (req, res) => {
 
 
 
-
 app.get('/dashboard', verifyToken, (req, res) => {
   res.json({ message: 'Bienvenido al dashboard', user: req.user });
 });
 
 app.post('/verify', verifyToken, async (req, res) => {
   const userId = req.user.userId;
-  const verificationData = req.body; // Aquí puedes tomar los datos del formulario de verificación
-  // Aquí puedes manejar la lógica para validar los datos de verificación
-  // Actualizar el campo verificationStatus del usuario
-  await User.findByIdAndUpdate(userId, { verificationStatus: 'verificado' }); // Cambio aquí
-  // Opcionalmente, puedes guardar los datos de verificación en otra colección
-  res.json({ message: 'Cuenta verificada con éxito' });
+  const verificationData = req.body;
+
+  try {
+    // Llamar a la función de verificación en verificationService
+    const result = await verificationService.verifyUser(userId, verificationData);
+
+    // Responder según el resultado
+    if (result.success) {
+      res.json({ message: 'Cuenta verificada con éxito' });
+    } else {
+      res.status(400).json({ message: 'Verificación fallida', reason: result.reason });
+    }
+  } catch (error) {
+    console.error('Error en la verificación:', error);
+    res.status(500).json({ message: 'Error interno del servidor' });
+  }
 });
+
 
 app.post('/wallet', verifyToken, async (req, res) => {
   // Generar una semilla aleatoria de 32 bytes
@@ -259,6 +269,7 @@ app.post('/wallet', verifyToken, async (req, res) => {
 
   wallet.save().then(() => res.json({ message: 'Billetera creada con éxito', address: address }));
 });
+
 
 // Iniciar el servidor
 const PORT = process.env.PORT || 3001;
