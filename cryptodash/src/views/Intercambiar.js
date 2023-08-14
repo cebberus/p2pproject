@@ -77,7 +77,7 @@ const Intercambiar = () => {
             {/* Aquí puedes agregar el contenido y las funcionalidades específicas de la página "Intercambiar" */}
           </div>
         </div>
-        <VerificationOverlay />
+        <VerificationOverlay verificationStatus={verificationStatus} />
       </div>
     </div>
   );

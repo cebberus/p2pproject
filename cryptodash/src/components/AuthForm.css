@@ -148,3 +148,52 @@
   margin-bottom: 10px;
   margin-top: -20px;
 }
+
+
+.login-error-popup {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.login-error-popup-content {
+  background: #fff;
+  padding: 20px;
+  border-radius: 5px;
+  text-align: center;
+}
+
+.login-error-popup p {
+  color: #000;
+  margin-bottom: 16px;
+}
+
+.login-error-popup a {
+  color: #007BFF;
+  text-decoration: underline;
+  display: block; /* Hace que el enlace ocupe toda la línea */
+  margin-bottom: 25px;
+}
+
+.login-error-popup-button {
+  margin-top: 10px; /* Espacio adicional entre el enlace y el botón */
+}
+
+.login-error-popup button {
+  padding: 14px 20px;
+  cursor: pointer;
+  background-color: #007BFF;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  font-size: 16px;
+}
+
+

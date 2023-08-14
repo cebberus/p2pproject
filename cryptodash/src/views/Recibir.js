@@ -76,7 +76,7 @@ const Recibir = () => {
             {/* Aquí puedes agregar el contenido y las funcionalidades específicas de la página "Recibir" */}
           </div>
         </div>
-        <VerificationOverlay />
+        <VerificationOverlay verificationStatus={verificationStatus} />
       </div>
     </div>
   );

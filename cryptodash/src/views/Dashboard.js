@@ -16,6 +16,7 @@ const Dashboard = () => {
   const [verificationStatus, setVerificationStatus] = useState(null); // Estado para almacenar el estado de verificación
   const [isLoading, setIsLoading] = useState(true);
   const token = localStorage.getItem('authToken');
+  console.log(token);
 
 
   
@@ -132,7 +133,7 @@ const Dashboard = () => {
             </table>
           </div>
         </div>
-        <VerificationOverlay /> {/* Utiliza el componente */}
+        <VerificationOverlay verificationStatus={verificationStatus} />
       </div>
     </div>
   );  

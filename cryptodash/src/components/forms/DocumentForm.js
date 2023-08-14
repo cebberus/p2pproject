@@ -108,10 +108,10 @@ const DocumentForm = ({ validateForm }) => {
           {visitedFields['tipoDocumento'] && localFormData.tipoDocumento === '' && <img src={errorIcon} alt="error" className="error-icon" />}
           {showCompleteIcon('tipoDocumento') && <img src={completeIcon} alt="complete" className="success-icon" />}
         </div>
-        <div className={`input-container ${getErrorClass('numeroDocumento')}`}>
-          <input type="text" name="numeroDocumento" placeholder="Número de documento" value={localFormData.numeroDocumento} onChange={handleChange} onBlur={handleBlur} />
-          {visitedFields['numeroDocumento'] && localFormData.numeroDocumento === '' && <img src={errorIcon} alt="error" className="error-icon" />}
-          {showCompleteIcon('numeroDocumento') && <img src={completeIcon} alt="complete" className="success-icon" />}
+        <div className={`input-container ${getErrorClass('rut')}`}>
+          <input type="text" name="rut" placeholder="Número de documento de identificacion" value={localFormData.rut} onChange={handleChange} onBlur={handleBlur} />
+          {visitedFields['rut'] && localFormData.rut === '' && <img src={errorIcon} alt="error" className="error-icon" />}
+          {showCompleteIcon('rut') && <img src={completeIcon} alt="complete" className="success-icon" />}
         </div>
         <div className={`input-container ${getErrorClass('paisEmisorDocumento')}`}>
           <select name="paisEmisorDocumento" placeholder="País emisor" value={localFormData.paisEmisorDocumento} onChange={handleChange} onBlur={handleBlur}>

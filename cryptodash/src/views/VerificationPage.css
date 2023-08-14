@@ -114,14 +114,14 @@
   }
   
 
-  .popup-start-verification .popup-content {
+  .popup-verification-failure .popup-content, .popup-verification-success .popup-content {
     background-color: #fff;
     padding: 20px;
     border-radius: 10px; /* Opcional: para bordes redondeados */
     width: 25%;
     text-align: center;
   }
-  .popup-start-verification {
+  .popup-verification-failure, .popup-verification-success {
     position: fixed;
     top: 0;
     left: 0;
@@ -134,11 +134,11 @@
     flex-direction: column;
   }
   
-  .popup-start-verification  p {
+  .popup-verification-failure p, .popup-verification-success  p {
     margin-bottom: 20px;
   }
   
-  .popup-start-verification  button {
+  .popup-verification-failure button, .popup-verification-success  button {
     padding: 10px 20px;
     background-color: #007bff;
     color: #fff;

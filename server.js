@@ -12,6 +12,8 @@ const { BIP32Factory } = require('bip32');
 
 const bip32 = BIP32Factory(ecc);
 const testnet = bitcoin.networks.testnet;
+const { verifyDataWithForm} = require('./utils/verificationService');
+
 
 
 const app = express();
@@ -152,6 +154,25 @@ app.post('/api/saveUserData', verifyToken, async (req, res) => {
   res.status(201).json({ message: 'Datos guardados con éxito' });
 });
 
+// Ruta para eliminar los datos de verificación del usuario
+app.delete('/api/deleteUserData', verifyToken, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+
+    // Eliminar los datos de verificación asociados con el usuario
+    await Verification.findOneAndDelete({ userId });
+
+    // Actualizar el estado de verificación del usuario a "no verificado"
+    await User.findByIdAndUpdate(userId, { verificationStatus: 'no verificado' });
+
+    res.status(200).json({ message: 'Datos de verificación eliminados con éxito' });
+  } catch (error) {
+    console.error('Error al eliminar los datos de verificación:', error);
+    res.status(500).json({ message: 'Error al eliminar los datos de verificación' });
+  }
+});
+
+
 
 app.get('/api/verificationStatus', verifyToken, async (req, res) => {
   const userId = req.user.userId;
@@ -198,7 +219,7 @@ app.get('/formData', verifyToken, async (req, res) => {
     },
     documentInformation: {
       tipoDocumento: documentData.tipoDocumento,
-      numeroDocumento: documentData.numeroDocumento,
+      rut: documentData.rut,
       paisEmisorDocumento: documentData.paisEmisorDocumento,
       fechaEmisionDocumento: documentData.fechaEmisionDocumento,
     },
@@ -226,25 +247,30 @@ app.get('/dashboard', verifyToken, (req, res) => {
   res.json({ message: 'Bienvenido al dashboard', user: req.user });
 });
 
+
+// Ruta para verificar los datos
 app.post('/verify', verifyToken, async (req, res) => {
-  const userId = req.user.userId;
-  const verificationData = req.body;
-
   try {
-    // Llamar a la función de verificación en verificationService
-    const result = await verificationService.verifyUser(userId, verificationData);
+    const userId = req.user.userId;
+    const token = req.headers['authorization'];
 
-    // Responder según el resultado
-    if (result.success) {
-      res.json({ message: 'Cuenta verificada con éxito' });
-    } else {
-      res.status(400).json({ message: 'Verificación fallida', reason: result.reason });
-    }
+    // Llamar a verifyDataWithForm con userId y token
+    const verificationResult = await verifyDataWithForm(token);
+
+    // Si la verificación es exitosa, actualizar el estado de verificación del usuario a "verificado"
+    // Si no es exitosa, actualizar el estado de verificación del usuario a "no verificado"
+    const newVerificationStatus = verificationResult.success ? 'verificado' : 'no verificado';
+    await User.findByIdAndUpdate(userId, { verificationStatus: newVerificationStatus });
+
+    // Enviar el resultado de la verificación como respuesta
+    res.status(200).json(verificationResult);
   } catch (error) {
-    console.error('Error en la verificación:', error);
-    res.status(500).json({ message: 'Error interno del servidor' });
+    console.error('Ocurrió un error durante la verificación:', error);
+    res.status(500).json({ message: 'Ocurrió un error durante la verificación' });
   }
 });
+
+
 
 
 app.post('/wallet', verifyToken, async (req, res) => {

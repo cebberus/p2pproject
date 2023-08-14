@@ -76,7 +76,7 @@ const Enviar = () => {
             {/* Aquí puedes agregar el contenido y las funcionalidades específicas de la página "Enviar" */}
           </div>
         </div>
-        <VerificationOverlay />
+        <VerificationOverlay verificationStatus={verificationStatus} />
       </div>
     </div>
   );

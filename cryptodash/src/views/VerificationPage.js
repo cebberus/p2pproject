@@ -89,7 +89,29 @@ const VerificationPage = () => {
       });
   
       if (response.ok) {
-        setShowPopup(true);
+        // Llamar a la ruta de verificación después de guardar los datos
+        const verifyResponse = await fetch('http://localhost:3001/verify', {
+          method: 'POST',
+          headers: {
+            'Authorization': token,
+          },
+        });
+        const verificationResult = await verifyResponse.json();
+  
+        // Mostrar un popup diferente según el resultado de la verificación
+        if (verificationResult.success) {
+          setShowPopup('success');
+        } else {
+          setShowPopup('failure');
+  
+          // Eliminar los datos de la base de datos si la verificación falla
+          await fetch('http://localhost:3001/api/deleteUserData', {
+            method: 'DELETE',
+            headers: {
+              'Authorization': token,
+            },
+          });
+        }
       } else {
         console.error('Error al guardar los datos');
       }
@@ -131,16 +153,25 @@ const VerificationPage = () => {
             </div>
           </div>
         </div>
-        {showPopup && (
-        <div className="popup-start-verification">
-          <div className="popup-content"> {/* Contenedor agregado */}
-            <h2>Se iniciará el proceso de verificación</h2>
-            <p>Te enviaremos un email cuando el proceso se complete</p>
+      {showPopup === 'success' && (
+        <div className="popup-verification-success">
+          <div className='popup-content'>
+            <h2>Verificación exitosa</h2>
+            <p>Ya puedes usar todas las funcionalidades</p>
             <button onClick={() => navigate('/dashboard')}>Continuar</button>
-          </div> {/* Fin del contenedor agregado */}
+          </div>
         </div>
       )}
-      </div>
+      {showPopup === 'failure' && (
+        <div className="popup-verification-failure">
+          <div className='popup-content'>
+            <h2>La verificación de identidad ha fallado</h2>
+            <p>Revisa los datos, asegúrate que coincidan con las imágenes subidas y procura que en la selfie se vea bien tu rostro</p>
+            <button onClick={() => setShowPopup(false)}>Reintentar</button>
+          </div>
+        </div>
+      )}
+    </div>
   );
 };
 

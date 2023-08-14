@@ -18,6 +18,10 @@ const AuthForm = () => {
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [passwordError, setPasswordError] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+  const [showLoginErrorPopup, setShowLoginErrorPopup] = useState(false);
+  const [showRegisterSuccessPopup, setShowRegisterSuccessPopup] = useState(false);
+
+
 
   const toggleForm = () => {
     setIsLogin(!isLogin);
@@ -36,18 +40,20 @@ const AuthForm = () => {
       localStorage.setItem('verificationStatus', verificationStatus);
       navigate('/dashboard');
     } catch (error) {
-      setErrorMessage('Error al iniciar sesión. Inténtalo de nuevo.');
+      setShowLoginErrorPopup(true);
     }
   };
 
   const registerUser = async (email, password) => {
     try {
-      await axios.post('http://localhost:3001/register', { email, password });
-      // Aquí puedes manejar la respuesta, como redirigir al usuario o mostrar un mensaje de éxito
+      const response = await axios.post('http://localhost:3001/register', { email, password });
+      setShowRegisterSuccessPopup(true); // Muestra el popup de registro exitoso
+      loginUser(email, password); // Inicia sesión con los datos registrados
     } catch (error) {
       setErrorMessage('Error al registrar. Inténtalo de nuevo.');
     }
   };
+  
 
 
 
@@ -209,6 +215,27 @@ const AuthForm = () => {
         </div>
       </div>
         {errorMessage && <div className="error-message">{errorMessage}</div>}
+        {showLoginErrorPopup && (
+          <div className="login-error-popup">
+            <div className="login-error-popup-content">
+              <p>Los datos ingresados no son correctos.</p>
+              <a href="/forgot-password">Recuperar contraseña</a>
+              <div className="login-error-popup-button">
+                <button onClick={() => setShowLoginErrorPopup(false)}>Reintentar</button>
+              </div>
+            </div>
+          </div>
+        )}
+        {showRegisterSuccessPopup && (
+          <div className="login-error-popup">
+            <div className="login-error-popup-content">
+              <p>Registro exitoso</p>
+              <div className="login-error-popup-button">
+                <button onClick={() => setShowRegisterSuccessPopup(false)}>Aceptar</button>
+              </div>
+            </div>
+          </div>
+        )}
     </form>
   );
 };

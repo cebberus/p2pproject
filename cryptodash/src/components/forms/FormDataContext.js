@@ -27,7 +27,7 @@ const ResidenceinitialData = {
 
   const documentinitialData = {
     tipoDocumento: '',
-    numeroDocumento: '',
+    rut: '',
     paisEmisorDocumento: '',
     fechaEmisionDocumento: ''
   };
@@ -45,7 +45,7 @@ const ResidenceinitialData = {
     pepDetails: {
       nombres: '',
       apellidos: '',
-      numeroDocumento: '',
+      rut: '',
       cargo: ''
     }
   };

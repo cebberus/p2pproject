@@ -146,6 +146,7 @@
 
 .popup-upload-frontimage img, .popup-upload-backimage img, .popup-upload-selfie video {
   max-width: 100%;
+  max-height: 100%;
   height: auto;
   object-fit: contain;
 }

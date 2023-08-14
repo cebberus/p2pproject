@@ -1,12 +1,9 @@
-// VerificationOverlay.js
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import './VerificationOverlay.css';
 
-export const getVerificationStatus = () => localStorage.getItem('verificationStatus');
-const VerificationOverlay = () => {
+const VerificationOverlay = ({ verificationStatus }) => {
   const navigate = useNavigate();
-  const verificationStatus = getVerificationStatus();
 
   const handleVerificationClick = () => {
     navigate('/verificationpage');
@@ -23,7 +20,7 @@ const VerificationOverlay = () => {
     );
   }
 
-  if (verificationStatus !== 'verificado') { // Cambio aquí
+  if (verificationStatus !== 'verificado') {
     return (
       <div className="verification-overlay">
         <div className="verification-message">
@@ -39,4 +36,5 @@ const VerificationOverlay = () => {
 };
 
 export default VerificationOverlay;
+
 

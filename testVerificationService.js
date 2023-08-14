@@ -1,22 +1,42 @@
-// testVerificationService.js
-const verificationService = require('./verificationService');
-const testVerificationService = async () => {
+const axios = require('axios');
+
+const email = 'fco.quinteromunoz@gmail.com';
+const password = 'B0nn3l3s123#';
+
+const loginAndGetToken = async (email, password) => {
   try {
-    // Datos de inicio de sesión (reemplaza estos valores con los datos reales)
-    const email = 'fco.quinteromunoz@gmail.com';
-    const password = 'B0nn3l3s123#';
-
-    // Iniciar sesión y obtener el token
-    const token = await verificationService.loginAndGetToken(email, password);
-    console.log('Token obtenido:', token);
-
-    // Extraer el texto de las imágenes
-    const extractedTexts = await verificationService.extractTextFromImages(token);
-    console.log('Textos extraídos:', extractedTexts);
+    const response = await axios.post('http://localhost:3001/login', { email, password });
+    const token = response.data.token;
+    return token;
   } catch (error) {
-    console.error('Ocurrió un error durante la prueba:', error);
+    console.error('Ocurrió un error durante el inicio de sesión:', error);
+    throw error;
   }
 };
 
-// Ejecutar la prueba
-testVerificationService();
+const testVerification = async (token, verificationData) => {
+  try {
+    const response = await axios.post('http://localhost:3001/verify', verificationData, {
+      headers: { 'Authorization': token },
+    });
+    console.log('Resultado de la verificación:', response.data);
+  } catch (error) {
+    console.error('Ocurrió un error durante la verificación:', error);
+  }
+};
+
+// Datos de verificación (reemplaza esto con los datos reales)
+const verificationData = {
+  // Tus datos de verificación aquí
+};
+
+loginAndGetToken(email, password)
+  .then(token => {
+    console.log('Token obtenido:', token);
+    return testVerification(token, verificationData);
+  })
+  .catch(error => {
+    console.error('Ocurrió un error:', error);
+  });
+
+
