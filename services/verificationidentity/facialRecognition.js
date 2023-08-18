@@ -5,7 +5,7 @@ const canvas = require('canvas');
 const utilsPath = path.join(__dirname);
 const { Canvas, Image, ImageData } = canvas;
 faceapi.env.monkeyPatch({ Canvas, Image, ImageData });
-const modelsPath = path.join(__dirname, '..', 'models');
+const modelsPath = path.join(__dirname, '..','..', 'models');
 
 
 const frontImagePath = path.join(utilsPath, 'frontImage.png');

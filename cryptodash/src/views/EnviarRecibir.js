@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import Sidebar from '../components/Sidebar';
-import SettingsContainer from '../components/SettingsContainer';
+import Sidebarleft from '../components/SidebarLeft';
+import SidebarRight from '../components/SidebarRight';
 import avatar from '../assets/avatar.png';
 import VerificationOverlay from '../components/VerificationOverlay';
 import './CommonStylesMenus.css';
@@ -9,7 +9,7 @@ import inVerificationImage from '../assets/in-verification.png';
 import notVerifiedImage from '../assets/not-verified.png';
 import Loading from '../components/Loading';
 
-const Enviar = () => {
+const EnviarRecibir = () => {
   const [verificationStatus, setVerificationStatus] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const token = localStorage.getItem('authToken');
@@ -59,30 +59,30 @@ const Enviar = () => {
 
   return (
     <div className="dashboard-container">
-      <Sidebar />
+      <Sidebarleft />
       <div className="main-content-wrapper">
-        <div className="header">
+        <div className="header-dashboard">
           <div className="header-left">
             <img src={avatar} alt="Avatar" className="avatar" />
-            <h1>Enviar Bitcoin</h1>
+            <h1>Enviar Recibir Bitcoin</h1>
             <img src={verificationImage} alt="Estado de verificación" className="verification-status-image" />
             <span className={verificationClass}>{verificationText}</span>
           </div>
-          <SettingsContainer />
         </div>
         <div className={`main-content ${!isVerified ? 'blur' : ''}`}>
           <div className="send-container">
-            <h2>SEND</h2>
+            <h2>Enviar Recibir</h2>
             {/* Aquí puedes agregar el contenido y las funcionalidades específicas de la página "Enviar" */}
           </div>
         </div>
         <VerificationOverlay verificationStatus={verificationStatus} />
       </div>
+      <SidebarRight />
     </div>
   );
 };
 
-export default Enviar;
+export default EnviarRecibir;
 
 
 

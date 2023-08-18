@@ -1,3 +1,4 @@
+//SetingsContainer.js
 import React, { useState } from 'react';
 import './SettingsContainer.css'; // Importa el archivo CSS
 import settingsIcon from '../assets/settings-icon.png'; // Icono de ajustes

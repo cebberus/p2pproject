@@ -5,7 +5,7 @@
     align-items: center;
   }
 
-  .header-container {
+  .header-container-verify {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -14,7 +14,7 @@
     margin-bottom: 10px;
   }
   
-  .header-logo {
+  .header-logo-verify {
     width: 100px; /* Ajusta según tus necesidades */
   }
   

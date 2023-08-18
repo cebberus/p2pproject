@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import Sidebar from '../components/Sidebar';
-import SettingsContainer from '../components/SettingsContainer';
+import Sidebarleft from '../components/SidebarLeft';
+import SidebarRight from '../components/SidebarRight';
 import avatar from '../assets/avatar.png';
 import VerificationOverlay from '../components/VerificationOverlay';
 import './CommonStylesMenus.css';
@@ -60,16 +60,15 @@ const Intercambiar = () => {
 
   return (
     <div className="dashboard-container">
-      <Sidebar />
+      <Sidebarleft />
       <div className="main-content-wrapper">
-        <div className="header">
+        <div className="header-dashboard">
           <div className="header-left">
             <img src={avatar} alt="Avatar" className="avatar" />
             <h1>Intercambiar Bitcoin</h1>
             <img src={verificationImage} alt="Estado de verificación" className="verification-status-image" />
             <span className={verificationClass}>{verificationText}</span>
           </div>
-          <SettingsContainer />
         </div>
         <div className={`main-content ${!isVerified ? 'blur' : ''}`}>
           <div className="to-exchange-container">
@@ -79,6 +78,7 @@ const Intercambiar = () => {
         </div>
         <VerificationOverlay verificationStatus={verificationStatus} />
       </div>
+      <SidebarRight />
     </div>
   );
 };

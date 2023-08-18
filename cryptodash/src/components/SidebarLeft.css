@@ -1,12 +1,14 @@
-.sidebar {
+/* Sidebar.css*/
+.sidebar-left {
     flex: 0 0 250px;
     background-color: white;
     padding: 20px;
     height: 100%;
-    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+    box-shadow: 0px 0 5px rgba(0, 0, 0, 0.1); /* Desplazamiento horizontal ajustado a 0px */
+    
   }
   
-  .sidebar nav a {
+  .sidebar-left nav a {
     display: block;
     padding: 10px 15px;
     color: #333;
@@ -16,11 +18,11 @@
     transition: background-color 0.3s;
   }
   
-  .sidebar nav a:hover {
+  .sidebar-left nav a:hover {
     background-color: #f0f0f0;
   }
   
-  .sidebar nav a.active {
+  .sidebar-left nav a.active {
     background-color: #f0f0f0;
     font-weight: bold;
   }

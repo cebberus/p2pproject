@@ -1,5 +1,15 @@
 /*Dashboard.css*/
 
+.dashboard-container {
+  display: flex;
+  height: 100vh;
+}
+
+.main-content-wrapper{
+  padding: 20px;
+}
+
+
 .balance-container {
   background-color: #fff;
   padding: 20px;

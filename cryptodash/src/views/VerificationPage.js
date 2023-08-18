@@ -123,8 +123,8 @@ const VerificationPage = () => {
 
   return (
       <div className="verification-page">
-        <header className="header-container">
-          <img src={logo} alt="Logo" className="header-logo" />
+        <header className="header-container-verify">
+          <img src={logo} alt="Logo" className="header-logo-verify" />
           <a href="/dashboard" className="later-link">hacerlo más tarde</a>
         </header>
         <div className="form-container">

@@ -1,55 +1,67 @@
 .header-container {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 20px;
-    background-color: #ffffff; /* Puedes cambiar el color según tu diseño */
-  }
-  
-  .logo-container img {
-    height: 50px; /* Ajusta según el tamaño de tu logo */
-  }
-  
-  .nav-links {
-    display: flex;
-    gap: 35px; /* Espacio entre los enlaces */
-  }
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 32px;
+  margin-left: 9.6px;
+  margin-right: 9.6px;
+  background-color: #ffffff; /* Puedes cambiar el color según tu diseño */
+}
 
-  .nav-links a {
-    color: #000000; /* Texto negro */
-    text-decoration: none; /* Sin subrayado */
-  }
-  
-  /* Cambia el color del enlace al pasar el cursor sobre él (hover) */
-  .nav-links a:hover {
-    color: #555555; /* Puedes ajustar este color según prefieras */
-  }  
-  
-  .auth-buttons {
-    display: flex;
-    gap: 10px; /* Espacio entre los botones */
-    
-  }
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
 
-  .auth-buttons a {
-    text-decoration: none;
-  }
-  
-  .login-btn,
-  .register-btn {
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-  }
-  
-  .login-btn {
-    background-color: #555; /* Color de fondo del botón de inicio de sesión */
-    color: #fff; /* Color del texto del botón de inicio de sesión */
-  }
-  
-  .register-btn {
-    background-color: #007BFF; /* Color de fondo del botón de registro */
-    color: #fff; /* Color del texto del botón de registro */
-  }
-  
+.logo-container img {
+  height: 50px; /* Ajusta según el tamaño de tu logo */
+}
+
+.nav-links {
+  display: flex;
+  gap: 35px; /* Espacio entre los enlaces */
+}
+
+.nav-item {
+  display: inline-block;
+}
+
+.nav-links a {
+  color: #000000; /* Texto negro */
+  text-decoration: none; /* Sin subrayado */
+  font-weight: 400;
+}
+
+/* Cambia el color del enlace al pasar el cursor sobre él (hover) */
+.nav-links a:hover {
+  color: #555555; /* Puedes ajustar este color según prefieras */
+}  
+
+.auth-buttons {
+  display: flex;
+  gap: 10px; /* Espacio entre los botones */
+}
+
+.auth-buttons a {
+  text-decoration: none;
+}
+
+.login-btn,
+.register-btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.login-btn {
+  background-color: #555; /* Color de fondo del botón de inicio de sesión */
+  color: #fff; /* Color del texto del botón de inicio de sesión */
+}
+
+.register-btn {
+  background-color: #007BFF; /* Color de fondo del botón de registro */
+  color: #fff; /* Color del texto del botón de registro */
+}

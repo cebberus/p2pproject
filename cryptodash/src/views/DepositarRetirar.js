@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import Sidebar from '../components/Sidebar';
-import SettingsContainer from '../components/SettingsContainer';
+import Sidebarleft from '../components/SidebarLeft';
+import SidebarRight from '../components/SidebarRight';
 import avatar from '../assets/avatar.png';
 import VerificationOverlay from '../components/VerificationOverlay';
 import './CommonStylesMenus.css';
@@ -9,7 +9,7 @@ import inVerificationImage from '../assets/in-verification.png';
 import notVerifiedImage from '../assets/not-verified.png';
 import Loading from '../components/Loading';
 
-const Recibir = () => {
+const DepositarRetirar = () => {
   const [verificationStatus, setVerificationStatus] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const token = localStorage.getItem('authToken');
@@ -59,28 +59,28 @@ const Recibir = () => {
 
   return (
     <div className="dashboard-container">
-      <Sidebar />
+      <Sidebarleft />
       <div className="main-content-wrapper">
-        <div className="header">
+        <div className="header-dashboard">
           <div className="header-left">
             <img src={avatar} alt="Avatar" className="avatar" />
-            <h1>Recibir Bitcoin</h1>
+            <h1>Depositar Retirar Bitcoin</h1>
             <img src={verificationImage} alt="Estado de verificación" className="verification-status-image" />
             <span className={verificationClass}>{verificationText}</span>
           </div>
-          <SettingsContainer />
         </div>
         <div className={`main-content ${!isVerified ? 'blur' : ''}`}>
           <div className="receive-container">
-          <h2>RECIEVE</h2>
+          <h2>Depositar Retirar</h2>
             {/* Aquí puedes agregar el contenido y las funcionalidades específicas de la página "Recibir" */}
           </div>
         </div>
         <VerificationOverlay verificationStatus={verificationStatus} />
       </div>
+      <SidebarRight />
     </div>
   );
 };
 
-export default Recibir;
+export default DepositarRetirar;
 

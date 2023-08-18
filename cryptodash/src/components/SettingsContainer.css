@@ -2,12 +2,14 @@
 .settings-container {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content:center;
+    width: 100%;
 }
   
 .options {
     display: flex;
     gap: 10px;
+    padding-top: 15px;
 }
   
 .options a {

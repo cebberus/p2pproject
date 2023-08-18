@@ -1,14 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import './Dashboard.css';
 import './CommonStylesMenus.css';
-import Sidebar from '../components/Sidebar';
-import SettingsContainer from '../components/SettingsContainer';
+import Sidebarleft from '../components/SidebarLeft';
+import SidebarRight from '../components/SidebarRight';
 import avatar from '../assets/avatar.png';
 import VerificationOverlay from '../components/VerificationOverlay'; 
 import verifiedImage from '../assets/verified.png';
 import inVerificationImage from '../assets/in-verification.png';
 import notVerifiedImage from '../assets/not-verified.png';
 import Loading from '../components/Loading';
+
+
 
 
 const Dashboard = () => {
@@ -94,16 +96,15 @@ const Dashboard = () => {
 
   return (
     <div className="dashboard-container">
-      <Sidebar />
+      <Sidebarleft />
       <div className="main-content-wrapper">
-        <div className="header">
+        <div className="header-dashboard">
           <div className="header-left">
             <img src={avatar} alt="Avatar" className="avatar" />
             <h1>Bienvenido {clientName && verificationStatus !== 'no verificado' ? clientName : ''}</h1>
             <img src={verificationImage} alt="Estado de verificación" className="verification-status-image" />
             <span className={verificationClass}>{verificationText}</span>
           </div>
-          <SettingsContainer />
         </div>
         <div className={`main-content ${!isVerified ? 'blur' : ''}`}>
           <div className="balance-container">
@@ -135,6 +136,7 @@ const Dashboard = () => {
         </div>
         <VerificationOverlay verificationStatus={verificationStatus} />
       </div>
+      <SidebarRight />
     </div>
   );  
 };

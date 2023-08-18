@@ -1,9 +1,10 @@
+//Sidebar.js
 import React from 'react';
 import { useLocation } from 'react-router-dom';
-import './Sidebar.css'; // Importa el archivo CSS
+import './SidebarLeft.css'; // Importa el archivo CSS
 import logo from '../assets/logo.svg';
 
-const Sidebar = () => {
+const SidebarLeft = () => {
   const location = useLocation();
 
   const isActive = (path) => {
@@ -11,16 +12,16 @@ const Sidebar = () => {
   };
 
   return (
-    <div className="sidebar">
+    <div className="sidebar-left">
       <img src={logo} alt="Logo" className="logo" />
       <nav>
         <a href="/dashboard" className={isActive('/dashboard')}>Inicio</a>
-        <a href="/enviar" className={isActive('/enviar')}>Enviar</a>
-        <a href="/recibir" className={isActive('/recibir')}>Recibir</a>
+        <a href="/enviar-recibir" className={isActive('/enviar-recibir')}>Enviar/Recibir</a>
+        <a href="/depositar-retirar" className={isActive('/depositar-retirar')}>Depositar/Retirar</a>
         <a href="/intercambiar" className={isActive('/intercambiar')}>Intercambiar</a>
       </nav>
     </div>
   );
 };
 
-export default Sidebar;
+export default SidebarLeft;

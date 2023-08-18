@@ -2,7 +2,9 @@
     display: flex; /* Establece el contenedor como un contenedor flex */
     justify-content: space-between; /* Distribuye el espacio entre los elementos */
     align-items: center; /* Alinea verticalmente los elementos al centro */
-    padding: 20px; /* Añade un poco de espacio alrededor para evitar que los elementos estén pegados al borde */
+    padding: 20px 32px; /* Añade un poco de espacio alrededor para evitar que los elementos estén pegados al borde */
+    margin-left: 9.6px;
+    margin-right: 9.6px;
   }
   
   .banner-image {
