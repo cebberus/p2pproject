@@ -31,30 +31,8 @@ function isValidAddress(address) {
     }
 }
 
-async function hasSufficientFunds(address, requiredAmount) {
-    try {
-        const response = await axios.get(`https://mempool.space/testnet/api/address/${address}`);
-        const balance = response.data.chain_stats.funded_txo_sum - response.data.chain_stats.spent_txo_sum;
-        return balance >= requiredAmount;
-    } catch (e) {
-        console.error("Error checking balance:", e);
-        return false;
-    }
-}
-
-async function broadcastTransaction(rawTx) {
-    try {
-        const response = await axios.post('https://mempool.space/testnet/api/tx', { tx: rawTx });
-        return response.data;
-    } catch (e) {
-        console.error("Error broadcasting transaction:", e);
-        throw e;
-    }
-}
 
 module.exports = {
     isValidAddress,
-    hasSufficientFunds,
-    broadcastTransaction,
     getSourceWalletForVirtualFunds
 };

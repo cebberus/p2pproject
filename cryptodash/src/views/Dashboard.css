@@ -73,3 +73,62 @@
 .header-left span:is(.not-verified) {
   color: red; /* Texto rojo para "Sin verificar" */
 }
+
+
+.wallet-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  padding: 20px;
+  border: 1px solid #ccc;
+  margin: 20px 0;
+  text-align: center;
+}
+
+.wallet-container button{
+  background-color: #007BFF;
+  color: #fff;
+  border: none;
+  width: 48%; /* Ajusta según tus necesidades */
+  text-align: center; /* Centra el texto */
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition-duration: 0.25s;
+}
+
+.wallet-popup {
+  display: flex;
+  align-items: center;
+  position: fixed;
+  flex-direction: column;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  padding: 20px;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  z-index: 1000;
+  text-align: center;
+}
+
+.wallet-popup button {
+  background-color: #007BFF;
+  color: #fff;
+  border: none;
+  width: 48%; /* Ajusta según tus necesidades */
+  text-align: center; /* Centra el texto */
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition-duration: 0.25s;
+}

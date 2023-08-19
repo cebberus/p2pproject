@@ -7,8 +7,8 @@ const ECPair = ECPairFactory.ECPairFactory(ecc);
 const testnet = bitcoin.networks.testnet;
 
 async function sendAllFunds() {
-    const senderAddress = "mwRH4zmfTmoNu12JaVHnoEK2WdtYFTcxPp";
-    const senderPrivateKey = "cPS5Hwu5oTmCFxTopavByYYN4MbHQ4cqoR4F7nugG5oKapoN3NcU";
+    const senderAddress = "mu9ZhfsRtqitpoEDK3bkTyvhPyQEqTpGUf";
+    const senderPrivateKey = "cRGsHYjXZptG2nuDZDYp6x2PYADavH9uwzhMy9kPEPNZADT27jLH";
     const recipientAddress = "tb1qhsa0mwu93mzg7lppzm4x8excmvfr2ss6yn8pn4";
 
     try {
@@ -29,7 +29,7 @@ async function sendAllFunds() {
             totalInput += utxo.value;
         }
 
-        const txfee = 200;  // Establecer una tarifa de transacción
+        const txfee = 928;  // Establecer una tarifa de transacción
         const sendAmount = totalInput - txfee;
 
         // Agregar la dirección del destinatario como salida con el monto total menos las tarifas

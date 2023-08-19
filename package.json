@@ -10,6 +10,7 @@
   "license": "ISC",
   "dependencies": {
     "@google-cloud/vision": "^4.0.1",
+    "@mempool/mempool.js": "^2.3.0",
     "axios": "^1.4.0",
     "bcryptjs": "^2.4.3",
     "bip32": "^4.0.0",
@@ -32,7 +33,6 @@
     "socks-proxy-agent": "^8.0.1",
     "tesseract.js": "^4.1.1",
     "tiny-secp256k1": "^2.2.3",
-    "tor-request": "^3.1.0",
     "ws": "^8.13.0"
   }
 }

@@ -11,11 +11,11 @@ const ecc = require('tiny-secp256k1');
 const bitcoin = require('bitcoinjs-lib');
 const { BIP32Factory } = require('bip32');
 const bip39 = require('bip39');
-
 const bip32 = BIP32Factory(ecc);
 const testnet = bitcoin.networks.testnet;
 const { verifyDataWithForm} = require('./services/verificationidentity/verificationService');
-const { isValidAddress, hasSufficientFunds, broadcastTransaction, getSourceWalletForVirtualFunds } = require('./services/bitcoin/walletService');
+const { isValidAddress, getSourceWalletForVirtualFunds } = require('./services/bitcoin/walletService');
+
 
 
 
@@ -158,6 +158,14 @@ app.post('/login', async (req, res) => {
 });
 
 
+// Ruta para verificar la validez del token
+app.get('/api/checkTokenValidity', verifyToken, (req, res) => {
+  // Si el middleware verifyToken no envió un error, entonces el token es válido
+  res.status(200).json({ valid: true });
+});
+
+
+
 app.post('/logout', verifyToken, (req, res) => {
   // Aquí puedes invalidar el token si estás usando una lista negra de tokens o alguna otra lógica
   // Por ahora, simplemente responderemos con un mensaje de éxito
@@ -289,66 +297,129 @@ app.post('/verify', verifyToken, async (req, res) => {
 });
 
 //////////////////////////////////////////////////////////// BITCOIN OPERATIONS ///////////////////////////////////////////////////////////////////////////////////
-const WebSocket = require('ws');
-const { SocksProxyAgent } = require('socks-proxy-agent');
+
+//const { SocksProxyAgent } = require('socks-proxy-agent');
 // Configura el agente proxy para Tor
-const torProxy = 'socks5://127.0.0.1:9150';
-const agent = new SocksProxyAgent(torProxy);
+//const torProxy = 'socks5h://127.0.0.1:9150';
+//const agent = new SocksProxyAgent(torProxy);
 
-const ws = new WebSocket('ws://otcuzuilswqjx7rs3kmkemuw6ulxkxcbinqqj7t6p77pafcgfv5nbvad.onion/api/v1/ws', { agent: agent });
+//const ws = new WebSocket('ws://otcuzuilswqjx7rs3kmkemuw6ulxkxcbinqqj7t6p77pafcgfv5nbvad.onion/api/v1/ws', { agent: agent });
+const WebSocket = require('ws');
 
-ws.on('open', function open() {
-  console.log('Conexión WebSocket establecida');
-});
+const serverWS = () => {
+  const ws = new WebSocket('wss://ws.blockchain.info/inv');
 
-ws.on('error', function error(err) {
-  console.error('WebSocket error:', err);
-});
-
-
-ws.on('message', async function incoming(data) {
-  const res = JSON.parse(data.toString());
-  
-  if (res.transactions) {
-    for (let tx of res.transactions) {
-      const wallet = await Wallet.findOne({ address: tx.address });
-      if (wallet) {
-        // Aquí puedes actualizar el balance y registrar la transacción
-        // Asegúrate de ajustar el código según la estructura de datos de la transacción
-      }
+  ws.on('open', async () => {
+    console.log('WebSocket connection established.');
+    const allWallets = await Wallet.find({});
+    for (let wallet of allWallets) {
+        ws.send(JSON.stringify({ "op": "addr_sub", "addr": wallet.address }));
     }
-  }
-});
+  });
+
+  ws.on('message', async (data) => {
+    const res = JSON.parse(data);
+    console.log("Received data:", res);
+
+    if (res.op === 'utx') {
+        for (let tx of res.x.out) {
+            const wallet = await Wallet.findOne({ address: tx.addr });
+            if (wallet) {
+                wallet.balance += tx.value / 100000000; // Convertir satoshis a BTC
+                await wallet.save();
+
+                const newTransaction = new Transaction({
+                    fromWallet: res.x.inputs[0].prev_out.addr,
+                    toWallet: wallet._id,
+                    amount: tx.value / 100000000,
+                    status: 'completed',
+                    type: 'deposit'
+                });
+                await newTransaction.save();
+                console.log(`La billetera con dirección ${wallet.address} ha recibido ${tx.value / 100000000} BTC.`);
+            }
+        }
+    }
+  });
+
+  ws.on('close', async () => {
+    console.log('WebSocket connection closed.');
+    await sleep(60000);
+    serverWS();
+  });
+
+  return ws;
+};
+
+const sleep = (ms) => {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+};
+
+// Inicializa la conexión WebSocket
+serverWS();
+
+// El resto de tu código sigue igual...
 
 const MASTER_SEED_PHRASE = 'genre near parrot vocal demand basic slice leader portion begin favorite change';
 const seed = bip39.mnemonicToSeedSync(MASTER_SEED_PHRASE);
 
 app.post('/api/createwallet', verifyToken, async (req, res) => {
-  const userId = req.user.userId;
-  const existingWallet = await Wallet.findOne({ userId });
-  if (existingWallet) {
-    return res.status(400).json({ message: 'El usuario ya tiene una billetera creada' });
-  }
-  const root = bip32.fromSeed(seed, testnet);
-  const counter = await Counter.findOne({ name: 'walletAddressCounter' });
-  const child = root.derivePath(`m/44'/0'/0'/0/${counter.value}`);
-  const { address } = bitcoin.payments.p2pkh({ pubkey: child.publicKey, network: testnet });
-  const wallet = new Wallet({
-    userId: userId,
-    address: address,
-    privateKey: child.toWIF(),
-    balance: 0,
-    virtualBalance: 0,
-  });
-  await wallet.save();
-  counter.value += 1;
-  await counter.save();
+    const userId = req.user.userId;
+    const existingWallet = await Wallet.findOne({ userId });
+    if (existingWallet) {
+        return res.status(400).json({ message: 'El usuario ya tiene una billetera creada' });
+    }
+    const root = bip32.fromSeed(seed, testnet);
+    const counter = await Counter.findOne({ name: 'walletAddressCounter' });
+    const child = root.derivePath(`m/44'/0'/0'/0/${counter.value}`);
+    const { address } = bitcoin.payments.p2pkh({ pubkey: child.publicKey, network: testnet });
+    const wallet = new Wallet({
+        userId: userId,
+        address: address,
+        privateKey: child.toWIF(),
+        balance: 0,
+        virtualBalance: 0,
+    });
+    await wallet.save();
+    counter.value += 1;
+    await counter.save();
 
-  // Rastrea la nueva dirección con el WebSocket de Mempool
-  ws.send(JSON.stringify({ 'track-address': address }));
+    // Rastrea la nueva dirección con el WebSocket de Blockchain.com
+    ws.send(JSON.stringify({ "op": "addr_sub", "addr": address }));
 
-  res.json({ message: 'Billetera creada con éxito', address: address });
+    res.json({ message: 'Billetera creada con éxito', address: address });
 });
+
+// Función para mostrar las direcciones rastreadas en la consola
+app.get('/api/tracked-addresses', async (req, res) => {
+    const allWallets = await Wallet.find({});
+    const addresses = allWallets.map(wallet => wallet.address);
+    console.log("Direcciones en seguimiento:", addresses);
+    res.json({ addresses: addresses });
+});
+
+
+
+
+
+app.get('/api/wallet/exist', verifyToken, async (req, res) => {
+  try {
+    // Suponiendo que el token de autenticación te da acceso al ID del usuario
+    const userId = req.user.userId;
+    const wallet = await Wallet.findOne({ userId: userId });
+    if (wallet) {
+      res.json({ exists: true });
+    } else {
+      res.json({ exists: false });
+    }
+  } catch (error) {
+    console.error('Error checking wallet existence:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
 
 
 app.get('/api/wallet/balance', verifyToken, async (req, res) => {
@@ -506,18 +577,25 @@ setInterval(async () => {
 
 
 app.get('/api/wallet/transactions', verifyToken, async (req, res) => {
-  const userWallet = await Wallet.findOne({ userId: req.user.userId });
-  if (!userWallet) {
-      return res.status(404).json({ error: 'Billetera no encontrada' });
+  try {
+    const userWallet = await Wallet.findOne({ userId: req.user.userId });
+    if (!userWallet) {
+        return res.status(404).json({ error: 'Billetera no encontrada' });
+    }
+
+    // Obtener todas las transacciones relacionadas con la billetera del usuario
+    const transactions = await Transaction.find({
+        $or: [{ fromWallet: userWallet._id }, { toWallet: userWallet._id }]
+    });
+
+    // Si no se encuentran transacciones, devolver un array vacío
+    res.json({ transactions: transactions || [] });
+  } catch (error) {
+    console.error("Error al obtener transacciones:", error);
+    res.status(500).json({ error: `Error al obtener transacciones: ${error.message}` });
   }
-
-  // Obtener todas las transacciones relacionadas con la billetera del usuario
-  const transactions = await Transaction.find({
-      $or: [{ fromWallet: userWallet._id }, { toWallet: userWallet._id }]
-  });
-
-  res.json({ transactions });
 });
+
 
 
 

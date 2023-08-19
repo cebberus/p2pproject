@@ -10,61 +10,106 @@ import inVerificationImage from '../assets/in-verification.png';
 import notVerifiedImage from '../assets/not-verified.png';
 import Loading from '../components/Loading';
 
-
-
-
 const Dashboard = () => {
   const [clientName, setClientName] = useState(null);
-  const [verificationStatus, setVerificationStatus] = useState(null); // Estado para almacenar el estado de verificación
+  const [verificationStatus, setVerificationStatus] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [hasWallet, setHasWallet] = useState(false);
+  const [showWalletPopup, setShowWalletPopup] = useState(false);
+  const [bitcoinBalance, setBitcoinBalance] = useState(0);
+  const [transactions, setTransactions] = useState([]);
   const token = localStorage.getItem('authToken');
-  console.log(token);
-
-
-  
 
   useEffect(() => {
-    fetch('http://localhost:3001/api/verificationStatus', {
-      headers: {
-        'Authorization': token
-      },
-    })
-      .then(res => res.json())
-      .then(data => {
-        setVerificationStatus(data.status);
-        if (data.status === 'en revisión' || data.status === 'verificado') {
-          fetch('http://localhost:3001/formData', {
+    const fetchData = async () => {
+      try {
+        const verificationResponse = await fetch('http://localhost:3001/api/verificationStatus', {
+          headers: {
+            'Authorization': token
+          },
+        });
+        const verificationData = await verificationResponse.json();
+        setVerificationStatus(verificationData.status);
+  
+        if (verificationData.status === 'en revisión' || verificationData.status === 'verificado') {
+          const formDataResponse = await fetch('http://localhost:3001/formData', {
             headers: {
               'Authorization': token
             },
-          })
-            .then(res => res.json())
-            .then(data => {
-              if (data && data.personalInformation) {
-                setClientName(data.personalInformation.nombres);
-              }
-              setIsLoading(false); // Establece isLoading en false aquí
-            })
-            .catch(error => {
-              console.error('Hubo un error al obtener los datos:', error);
-              setIsLoading(false); // También aquí, en caso de error
-            });
-        } else {
-          setIsLoading(false); // También aquí, si el estado no es 'en revisión' o 'verificado'
+          });
+          const formData = await formDataResponse.json();
+          if (formData && formData.personalInformation) {
+            setClientName(formData.personalInformation.nombres);
+          }
         }
-      })
-      .catch(error => {
-        console.error('Hubo un error al obtener el estado de verificación:', error);
-        setIsLoading(false); // También aquí, en caso de error
-      });
-  }, [token]);
   
+        // Verificar si el usuario tiene una billetera
+        const walletExistResponse = await fetch('http://localhost:3001/api/wallet/exist', {
+          headers: {
+            'Authorization': token
+          },
+        });
+        const walletExistData = await walletExistResponse.json();
+        setHasWallet(walletExistData.exists);
+  
+        // Obtener el balance de la billetera
+        const balanceResponse = await fetch('http://localhost:3001/api/wallet/balance', {
+          headers: {
+            'Authorization': token
+          },
+        });
+        const balanceData = await balanceResponse.json();
+        setBitcoinBalance(balanceData.totalBalance);
+  
+        // Obtener las transacciones de la billetera
+        const transactionsResponse = await fetch('http://localhost:3001/api/wallet/transactions', {
+          headers: {
+            'Authorization': token
+          },
+        });
+        const transactionsData = await transactionsResponse.json();
+        if (transactionsData && transactionsData.transactions) {
+          setTransactions(transactionsData.transactions);
+        } else {
+          console.error('Unexpected API response format:', transactionsData);
+        }
+  
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+  
+    fetchData();
+  }, [token]);
+  console.log(token);
+  
+
+  const createWallet = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch('http://localhost:3001/api/createwallet', {
+        method: 'POST',
+        headers: {
+          'Authorization': token
+        },
+      });
+      const data = await response.json();
+      if (data.message === 'Billetera creada con éxito') {
+        setHasWallet(true);
+        setShowWalletPopup(true);
+      }
+    } catch (error) {
+      console.error('Error creating wallet:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   if (isLoading) {
     return <Loading />;
   }
-  
-  
-  
 
   let verificationImage;
   let verificationText;
@@ -86,12 +131,7 @@ const Dashboard = () => {
       verificationClass = 'not-verified';
       break;
   }
-  const userEmail = localStorage.getItem('userEmail');
-  const bitcoinBalance = 0.1234;
-  const transactions = [
-    { operation: 'Enviado 0.01 BTC', date: '2021-08-01' },
-    { operation: 'Recibido 0.05 BTC', date: '2021-07-30' },
-  ];
+
   const isVerified = verificationStatus === 'verificado';
 
   return (
@@ -107,33 +147,48 @@ const Dashboard = () => {
           </div>
         </div>
         <div className={`main-content ${!isVerified ? 'blur' : ''}`}>
-          <div className="balance-container">
-            <h2>Saldo Bitcoin</h2>
-            <div className="balance">
-              <span className="bitcoin-symbol">₿</span>
-              {bitcoinBalance}
+          {!hasWallet ? (
+            <div className="wallet-container">
+              <p>Aun no haz creado tu billetera de Bitcoin</p>
+              <button onClick={createWallet}>Crear wallet</button>
             </div>
-          </div>
-          <div className="transactions-container">
-            <h2>Registro de Transacciones</h2>
-            <table>
-              <thead>
-                <tr>
-                  <th>Operaciones</th>
-                  <th>Fecha</th>
-                </tr>
-              </thead>
-              <tbody>
-                {transactions.map((transaction, index) => (
-                  <tr key={index}>
-                    <td>{transaction.operation}</td>
-                    <td>{transaction.date}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          ) : (
+            <>
+              <div className="balance-container">
+                <h2>Saldo Bitcoin</h2>
+                <div className="balance">
+                  <span className="bitcoin-symbol">₿</span>
+                  {bitcoinBalance}
+                </div>
+              </div>
+              <div className="transactions-container">
+                <h2>Registro de Transacciones</h2>
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Operaciones</th>
+                      <th>Fecha</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {transactions.map((transaction, index) => (
+                      <tr key={index}>
+                        <td>{transaction.operation}</td>
+                        <td>{transaction.date}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
+          )}
         </div>
+        {showWalletPopup && (
+          <div className="wallet-popup">
+            <p>Se ha creado tu billetera exitosamente!</p>
+            <button onClick={() => setShowWalletPopup(false)}>Continuar</button>
+          </div>
+        )}
         <VerificationOverlay verificationStatus={verificationStatus} />
       </div>
       <SidebarRight />
@@ -142,6 +197,8 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
+
+
 
 
 
