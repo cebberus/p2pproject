@@ -7,6 +7,8 @@ const bip32 = BIP32Factory(ecc);
 const testnet = bitcoin.networks.testnet;
 const crypto = require('crypto');
 
+
+
 async function getSourceWalletForVirtualFunds(userId) {
     // Buscar todas las transacciones donde el usuario es el destinatario
     const transactions = await Transaction.find({ toWallet: userId }).sort({ date: -1 }); // Ordenar por fecha descendente

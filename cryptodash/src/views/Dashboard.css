@@ -3,10 +3,12 @@
 .dashboard-container {
   display: flex;
   height: 100vh;
+  width: 100%;
 }
 
 .main-content-wrapper{
   padding: 20px;
+  width: 100%;
 }
 
 
@@ -23,21 +25,7 @@
   gap: 10px;
 }
 
-.transactions-container {
-  margin-top: 20px;
-}
 
-.transactions-container table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.transactions-container th,
-.transactions-container td {
-  border: 1px solid #ccc;
-  padding: 8px;
-  text-align: left;
-}
 
 .transactions-container th {
   background-color: #f2f2f2;
@@ -131,4 +119,42 @@
   border-radius: 5px;
   cursor: pointer;
   transition-duration: 0.25s;
+}
+
+
+.btclogo{
+  width: 80px;
+}
+.balance{
+  font-weight: 600;
+  font-size: 24px;
+  line-height: 32px;
+}
+
+
+.transaction-item {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  border: 1px solid #e0e0e0;
+  margin-bottom: 10px;
+}
+
+.transaction-arrow {
+  font-size: 24px;
+  margin-right: 10px;
+}
+
+
+
+.green-arrow {
+  color: green;
+}
+
+.red-arrow {
+  color: red;
+}
+
+.transaction-details span {
+  margin-right: 10px;
 }

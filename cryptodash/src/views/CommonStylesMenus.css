@@ -1,3 +1,4 @@
+
 .dashboard-container {
     display: flex;
     width: 100%;
@@ -42,3 +43,149 @@
     pointer-events: none;
   }
   
+  /* Estilos para el menú dual */
+.menu-dual {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 20px;
+  border-radius: 5px;
+  overflow: hidden;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.menu-dual button {
+  flex: 1;
+  padding: 10px 20px;
+  font-size: 16px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  background-color: #f7f7f7;
+  color: #333;
+}
+
+.menu-dual button.active {
+  background-color: #007BFF; /* Color principal cuando está activo */
+  color: #fff;
+}
+
+.menu-dual button:not(.active):hover {
+  background-color: #e6e6e6; /* Color al pasar el ratón por encima */
+}
+
+/* Estilos para los contenedores de enviar y recibir */
+.send-container, .receive-container, .deposit-container, .withdraw-container {
+  padding: 20px;
+  border: 1px solid #e6e6e6;
+  border-radius: 10px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Estilos para los select boxes */
+.select-container, .input-group {
+  margin: 10px 0;
+}
+
+
+
+
+/* Estilo para el título del select box */
+.select-container label, .wallet-address-container label, .input-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+
+.btc-logo {
+  width: 25px; /* Ajusta según el tamaño deseado */
+  height: auto;
+  margin-right: 5px; /* Espacio entre la imagen y el texto */
+  vertical-align: middle; /* Alinea la imagen con el texto */
+}
+
+.wallet-address-container {
+  width: 500px; /* Ajusta según tus necesidades */
+  display: flex;
+  flex-direction: column;
+  
+}
+
+.qr-and-address {
+  display: flex;
+  align-items: center;
+  margin-top: 10px; /* Ajusta según tus necesidades */
+}
+
+.address-and-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-left: 20px; /* Ajusta según tus necesidades */
+}
+
+.wallet-address-container span, .wallet-address-container button {
+  margin-left: 20px; /* Ajusta según tus necesidades */
+}
+
+.deposit-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 100%;
+}
+.address-and-copy{
+  display: flex;
+}
+
+.address-with-button {
+  display: flex;
+  align-items: center;
+}
+
+
+.wallet-address{
+  font-weight: bold;
+}
+
+
+
+
+.input-group input{
+  width: 99%;
+  height: 35px;
+}
+
+
+
+.toggle-option {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.toggle-option button {
+  padding: 10px 20px;
+  background-color: #007BFF;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.toggle-option button:hover {
+  background-color: #0056b3;
+}
+
+/* CommonStylesMenus.css */
+
+.input-error {
+  border-color: red;
+}
+
+.error-message {
+  color: red;
+  margin-top: 5px;
+}

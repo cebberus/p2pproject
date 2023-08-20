@@ -12,6 +12,7 @@ import Loading from '../components/Loading';
 const EnviarRecibir = () => {
   const [verificationStatus, setVerificationStatus] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [activeMenu, setActiveMenu] = useState('enviar');
   const token = localStorage.getItem('authToken');
 
   useEffect(() => {
@@ -70,10 +71,22 @@ const EnviarRecibir = () => {
           </div>
         </div>
         <div className={`main-content ${!isVerified ? 'blur' : ''}`}>
-          <div className="send-container">
-            <h2>Enviar Recibir</h2>
-            {/* Aquí puedes agregar el contenido y las funcionalidades específicas de la página "Enviar" */}
+          <div className="menu-dual">
+            <button className={activeMenu === 'enviar' ? 'active' : ''} onClick={() => setActiveMenu('enviar')}>Enviar BTC</button>
+            <button className={activeMenu === 'recibir' ? 'active' : ''} onClick={() => setActiveMenu('recibir')}>Recibir BTC</button>
           </div>
+          {activeMenu === 'enviar' && (
+            <div className="send-container">
+              <h2>Enviar Bitcoin</h2>
+              {/* Aquí puedes agregar el contenido y las funcionalidades específicas de la página "Enviar" */}
+            </div>
+          )}
+          {activeMenu === 'recibir' && (
+            <div className="receive-container">
+              <h2>Recibir Bitcoin</h2>
+              {/* Aquí puedes agregar el contenido y las funcionalidades específicas de la página "Recibir" */}
+            </div>
+          )}
         </div>
         <VerificationOverlay verificationStatus={verificationStatus} />
       </div>

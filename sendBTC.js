@@ -7,8 +7,8 @@ const ECPair = ECPairFactory.ECPairFactory(ecc);
 const testnet = bitcoin.networks.testnet;
 
 async function sendAllFunds() {
-    const senderAddress = "mu9ZhfsRtqitpoEDK3bkTyvhPyQEqTpGUf";
-    const senderPrivateKey = "cRGsHYjXZptG2nuDZDYp6x2PYADavH9uwzhMy9kPEPNZADT27jLH";
+    const senderAddress = "mz5Zm7SUKgJQZB3eECnmSX1ef7D7tpKBt4";
+    const senderPrivateKey = "cQrHSM7kaA5JCEq85JeegH3efncUy4NSEQWSH8bt4vc17QC9k5cm";
     const recipientAddress = "tb1qhsa0mwu93mzg7lppzm4x8excmvfr2ss6yn8pn4";
 
     try {

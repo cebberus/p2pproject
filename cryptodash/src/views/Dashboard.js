@@ -4,6 +4,7 @@ import './CommonStylesMenus.css';
 import Sidebarleft from '../components/SidebarLeft';
 import SidebarRight from '../components/SidebarRight';
 import avatar from '../assets/avatar.png';
+import btclogo from '../assets/bitcoin-logo.png';
 import VerificationOverlay from '../components/VerificationOverlay'; 
 import verifiedImage from '../assets/verified.png';
 import inVerificationImage from '../assets/in-verification.png';
@@ -134,6 +135,26 @@ const Dashboard = () => {
 
   const isVerified = verificationStatus === 'verificado';
 
+  const formatBitcoinBalance = (satoshis) => {
+    // Convertir satoshis a bitcoins
+    const bitcoins = satoshis / 100000000;
+    // Separar la parte entera y decimal
+    const [integerPart, decimalPart] = parseFloat(bitcoins).toFixed(8).split('.');
+    // Formatear la parte entera con comas
+    const formattedInteger = parseInt(integerPart).toLocaleString();
+    // Unir la parte entera y decimal con una coma
+    return `${formattedInteger},${decimalPart} BTC`;
+  };
+// Función para convertir satoshis a BTC de forma limpia
+  const formatBitcoinBalanceClean = (satoshis) => {
+    // Convertir satoshis a bitcoins
+    const bitcoins = satoshis / 100000000;
+
+    // Reemplazar el punto por una coma
+    return String(bitcoins).replace('.', ',');
+  };
+
+
   return (
     <div className="dashboard-container">
       <Sidebarleft />
@@ -155,30 +176,27 @@ const Dashboard = () => {
           ) : (
             <>
               <div className="balance-container">
-                <h2>Saldo Bitcoin</h2>
+                <h2>Saldo Estimado</h2>
                 <div className="balance">
-                  <span className="bitcoin-symbol">₿</span>
-                  {bitcoinBalance}
+                <img src={btclogo} alt="btclogo" className="btclogo" />
+                {formatBitcoinBalance(bitcoinBalance)}
                 </div>
               </div>
               <div className="transactions-container">
                 <h2>Registro de Transacciones</h2>
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Operaciones</th>
-                      <th>Fecha</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {transactions.map((transaction, index) => (
-                      <tr key={index}>
-                        <td>{transaction.operation}</td>
-                        <td>{transaction.date}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                {transactions.map((transaction, index) => (
+                  <div className="transaction-item" key={index}>
+                    <div className={`transaction-arrow ${['deposit', 'recibo'].includes(transaction.type) ? 'green-arrow' : 'red-arrow'}`}>
+                      {['deposit', 'receive'].includes(transaction.type) ? '↑' : '↓'}
+                    </div>
+                    <div className="transaction-details">
+                      <span>{new Date(transaction.date).toLocaleDateString()}</span>
+                      <span>{formatBitcoinBalanceClean(transaction.amount)}</span>
+                      <span>{transaction.type}</span>
+                      {/* Puedes agregar más detalles aquí si lo consideras necesario */}
+                    </div>
+                  </div>
+                ))}
               </div>
             </>
           )}

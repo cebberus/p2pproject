@@ -95,16 +95,30 @@ const WalletSchema = new mongoose.Schema({
 const Wallet = mongoose.model('Wallet', WalletSchema);
 
 
-const TransactionSchema = new mongoose.Schema({
-  fromWallet: { type: mongoose.Schema.Types.ObjectId, ref: 'Wallet' },
-  toWallet: { type: mongoose.Schema.Types.ObjectId, ref: 'Wallet' },
+const ExternalTransactionSchema = new mongoose.Schema({
+  TxID: {type: String, required: true},
+  fromWallet: { type: String, required: true }, // Dirección de la billetera
+  toWallet: { type: String, required: true }, // Dirección de la billetera
   amount: Number,
   date: { type: Date, default: Date.now },
   status: String,
-  type: { type: String, enum: ['send','receive', 'deposit', 'withdrawal'] } // Nuevo campo
+  type: { type: String, enum: ['deposit', 'withdrawal'], required: true }
 });
+const ExternalTransaction = mongoose.model('ExternalTransaction', ExternalTransactionSchema);
 
-const Transaction = mongoose.model('Transaction', TransactionSchema);
+
+
+const InternalTransactionSchema = new mongoose.Schema({
+  InTxID: {type: String, required: true},
+  fromWallet: { type: String, required: true }, // Dirección de la billetera
+  toWallet: { type: String, required: true }, // Dirección de la billetera
+  amount: Number,
+  date: { type: Date, default: Date.now },
+  status: String,
+  type: { type: String, enum: ['send', 'receive'], required: true }
+});
+const InternalTransaction = mongoose.model('InternalTransaction', InternalTransactionSchema);
+
 
 
 
@@ -297,55 +311,24 @@ app.post('/verify', verifyToken, async (req, res) => {
 });
 
 //////////////////////////////////////////////////////////// BITCOIN OPERATIONS ///////////////////////////////////////////////////////////////////////////////////
-
-//const { SocksProxyAgent } = require('socks-proxy-agent');
-// Configura el agente proxy para Tor
-//const torProxy = 'socks5h://127.0.0.1:9150';
-//const agent = new SocksProxyAgent(torProxy);
-
-//const ws = new WebSocket('ws://otcuzuilswqjx7rs3kmkemuw6ulxkxcbinqqj7t6p77pafcgfv5nbvad.onion/api/v1/ws', { agent: agent });
 const WebSocket = require('ws');
+const trackWS = () => {
+  const ws = new WebSocket('wss://mempool.space/testnet/api/v1/ws');
+  const interval = setInterval(function ping() {
+    ws.ping();
+  }, 30000);
 
-const serverWS = () => {
-  const ws = new WebSocket('wss://ws.blockchain.info/inv');
-
-  ws.on('open', async () => {
-    console.log('WebSocket connection established.');
-    const allWallets = await Wallet.find({});
-    for (let wallet of allWallets) {
-        ws.send(JSON.stringify({ "op": "addr_sub", "addr": wallet.address }));
-    }
+  ws.on('open', function open() {
+    console.log('ws opened');
+    trackExistingWallets();
   });
 
-  ws.on('message', async (data) => {
-    const res = JSON.parse(data);
-    console.log("Received data:", res);
-
-    if (res.op === 'utx') {
-        for (let tx of res.x.out) {
-            const wallet = await Wallet.findOne({ address: tx.addr });
-            if (wallet) {
-                wallet.balance += tx.value / 100000000; // Convertir satoshis a BTC
-                await wallet.save();
-
-                const newTransaction = new Transaction({
-                    fromWallet: res.x.inputs[0].prev_out.addr,
-                    toWallet: wallet._id,
-                    amount: tx.value / 100000000,
-                    status: 'completed',
-                    type: 'deposit'
-                });
-                await newTransaction.save();
-                console.log(`La billetera con dirección ${wallet.address} ha recibido ${tx.value / 100000000} BTC.`);
-            }
-        }
-    }
-  });
-
-  ws.on('close', async () => {
-    console.log('WebSocket connection closed.');
+  ws.on('close', async function close() {
+    console.log('ws closed');
+    clearInterval(interval);
+    ws.terminate();
     await sleep(60000);
-    serverWS();
+    trackWS();
   });
 
   return ws;
@@ -357,8 +340,84 @@ const sleep = (ms) => {
   });
 };
 
-// Inicializa la conexión WebSocket
-serverWS();
+const ws = trackWS();
+ws.on('message', async function incoming(data) {
+  try {
+    const res = JSON.parse(data.toString());
+    console.log(JSON.stringify(res, null, 3));
+
+    if (res["address-transactions"] && res["address-transactions"][0]) {
+      // Verificar transacciones entrantes
+      if (res["address-transactions"][0].vout) {
+        for (let vout of res["address-transactions"][0].vout) {
+          const wallet = await Wallet.findOne({ address: vout.scriptpubkey_address });
+          if (wallet) {
+            // Actualizar el balance de la billetera
+            wallet.balance += vout.value;
+            await wallet.save();
+            console.log(`Balance actualizado para la dirección ${vout.scriptpubkey_address}. Nuevo balance: ${wallet.balance}`);
+            
+            const fromWalletAddress = res["address-transactions"][0].vin && res["address-transactions"][0].vin[0] ? res["address-transactions"][0].vin[0].prevout.scriptpubkey_address : null; // Asumiendo un solo input por simplicidad
+            const fromWallet = fromWalletAddress ? await Wallet.findOne({ address: fromWalletAddress }) : null;
+
+            const extTransaction = new ExternalTransaction({
+              TxID: res["address-transactions"][0].txid,
+              fromWallet: fromWallet ? fromWallet.address : fromWalletAddress, // Usar la dirección directamente
+              toWallet: wallet.address, // Usar la dirección directamente
+              amount: vout.value,
+              status: "completed",
+              type: "deposit"
+            });
+            await extTransaction.save();
+          }
+        }
+      }
+
+      // Verificar transacciones salientes
+      if (res["address-transactions"][0].vin) {
+        for (let vin of res["address-transactions"][0].vin) {
+          const wallet = await Wallet.findOne({ address: vin.prevout.scriptpubkey_address });
+          if (wallet) {
+            // Actualizar el balance de la billetera
+            wallet.balance -= vin.prevout.value;
+            await wallet.save();
+            console.log(`Balance actualizado para la dirección ${vin.prevout.scriptpubkey_address} debido a una transacción saliente. Nuevo balance: ${wallet.balance}`);
+            
+            const toWalletAddress = res["address-transactions"][0].vout && res["address-transactions"][0].vout[0] ? res["address-transactions"][0].vout[0].scriptpubkey_address : null; // Asumiendo un solo output por simplicidad
+            const toWallet = toWalletAddress ? await Wallet.findOne({ address: toWalletAddress }) : null;
+
+            const extTransaction = new ExternalTransaction({
+              TxID: res["address-transactions"][0].txid,
+              fromWallet: wallet.address, // Usar la dirección directamente
+              toWallet: toWallet ? toWallet.address : toWalletAddress, // Usar la dirección directamente
+              amount: vin.prevout.value,
+              status: "completed",
+              type: "withdrawal"
+            });
+            await extTransaction.save();
+          }
+        }
+      }
+    }
+  } catch (error) {
+    console.error("Error al procesar el mensaje del WebSocket:", error);
+  }
+});
+
+
+
+const trackExistingWallets = async () => {
+  try {
+    const allWallets = await Wallet.find({});
+    const addresses = allWallets.map(wallet => wallet.address);
+    addresses.forEach(address => {
+      ws.send(JSON.stringify({ 'track-address': address }));
+    });
+    console.log("Rastreando direcciones existentes:", addresses);
+  } catch (error) {
+    console.error("Error al rastrear direcciones existentes:", error);
+  }
+};
 
 // El resto de tu código sigue igual...
 
@@ -400,9 +459,20 @@ app.get('/api/tracked-addresses', async (req, res) => {
     res.json({ addresses: addresses });
 });
 
-
-
-
+app.get('/api/wallet/adress', verifyToken, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const wallet = await Wallet.findOne({ userId: userId });
+    if (!wallet) {
+      return res.status(404).json({ message: 'Billetera no encontrada.' });
+    } else {
+      res.json(wallet);
+    }
+  }catch (error) {
+    console.error('Error checking wallet adress', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
 
 app.get('/api/wallet/exist', verifyToken, async (req, res) => {
   try {
@@ -466,7 +536,7 @@ app.post('/api/wallet/send-receive', verifyToken, async (req, res) => {
   await recipientWallet.save();
 
   // Transacción para el remitente
-  const sendTransaction = new Transaction({
+  const sendTransaction = new InternalTransaction({
     fromWallet: senderWallet._id,
     toWallet: recipientWallet._id,
     amount: amount,
@@ -476,7 +546,7 @@ app.post('/api/wallet/send-receive', verifyToken, async (req, res) => {
   await sendTransaction.save();
 
   // Transacción para el destinatario
-  const receiveTransaction = new Transaction({
+  const receiveTransaction = new InternalTransaction({
     fromWallet: senderWallet._id,
     toWallet: recipientWallet._id,
     amount: amount,
@@ -564,10 +634,9 @@ setInterval(async () => {
 
   if (withdrawal.externalAddress === userWallet.address) {
     userWallet.virtualBalance -= withdrawal.amount;
-  } else {
-    userWallet.balance -= withdrawal.amount;
+    await userWallet.save();
+    console.log(`Virtual balance actualizado para el usuario ${withdrawal.userId}. Nuevo virtual balance: ${userWallet.virtualBalance}`);
   }
-  await userWallet.save();
   console.log(`Retiro procesado con éxito para el usuario ${withdrawal.userId} a la dirección ${withdrawal.externalAddress}`);
 }, PROCESS_INTERVAL);
 
@@ -583,18 +652,29 @@ app.get('/api/wallet/transactions', verifyToken, async (req, res) => {
         return res.status(404).json({ error: 'Billetera no encontrada' });
     }
 
-    // Obtener todas las transacciones relacionadas con la billetera del usuario
-    const transactions = await Transaction.find({
-        $or: [{ fromWallet: userWallet._id }, { toWallet: userWallet._id }]
+    // Obtener todas las transacciones externas relacionadas con la billetera del usuario
+    const externalTransactions = await ExternalTransaction.find({
+        $or: [{ fromWallet: userWallet.address }, { toWallet: userWallet.address }]
     });
 
+    // Obtener todas las transacciones internas relacionadas con la billetera del usuario
+    const internalTransactions = await InternalTransaction.find({
+        $or: [{ fromWallet: userWallet.address }, { toWallet: userWallet.address }]
+    });
+
+    // Combinar ambas listas de transacciones
+    const allTransactions = [...externalTransactions, ...internalTransactions];
+
     // Si no se encuentran transacciones, devolver un array vacío
-    res.json({ transactions: transactions || [] });
+    res.json({ transactions: allTransactions || [] });
   } catch (error) {
     console.error("Error al obtener transacciones:", error);
     res.status(500).json({ error: `Error al obtener transacciones: ${error.message}` });
   }
 });
+
+
+
 
 
 
