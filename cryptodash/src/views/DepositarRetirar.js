@@ -1,39 +1,42 @@
 import React, { useEffect, useState } from 'react';
-import Sidebarleft from '../components/SidebarLeft';
-import SidebarRight from '../components/SidebarRight';
-import avatar from '../assets/avatar.png';
+import { useLoading } from '../components/layout/LoadingContext';
+import Sidebarleft from '../components/sidebars/SidebarLeft';
+import SidebarRight from '../components/sidebars/SidebarRight';
 import btclogo from '../assets/bitcoin-logo.png';
 import VerificationOverlay from '../components/VerificationOverlay';
 import './CommonStylesMenus.css';
 import verifiedImage from '../assets/verified.png';
 import inVerificationImage from '../assets/in-verification.png';
 import notVerifiedImage from '../assets/not-verified.png';
-import Loading from '../components/Loading';
 import Select from 'react-select';
 import QRCode from 'qrcode.react';
+import CopyToClipboard from '../components/buttons/CopyToClipboard';
 
 
 const DepositarRetirar = () => {
   const [verificationStatus, setVerificationStatus] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const { setIsLoading } = useLoading(); 
   const [activeMenu, setActiveMenu] = useState('depositar');
   const [walletAddress, setWalletAddress] = useState('');
   const [selectedCurrency, setSelectedCurrency] = useState(null);
   const [selectedNetwork, setSelectedNetwork] = useState(null);
-  const [amount, setAmount] = useState(0); // Estado para el monto ingresado
-  const [netAmount, setNetAmount] = useState(0); // Estado para la cantidad neta a recibir
+  const [amount, setAmount] = useState(null); 
+  const [netAmount, setNetAmount] = useState(0); 
   const [isNetAmount, setIsNetAmount] = useState(true); // Estado para rastrear si el usuario quiere recibir el monto neto o el monto total
   const [userBalance, setUserBalance] = useState(0);
   const [inputError, setInputError] = useState('');
+  const [userAvatar, setUserAvatar] = useState(null); // avatar por defecto
 
   const COMMISSION = 0.00005; // Comisión fija para el ejemplo
 
   const token = localStorage.getItem('authToken');
 
   useEffect(() => {
+    setIsLoading(true);
+
     const fetchWalletAddress = async () => {
       try {
-        const walletAdressResponse = await fetch('http://localhost:3001/api/wallet/adress', {
+        const walletAdressResponse = await fetch('http://localhost:3001/api/wallet/address', {
           headers: {
             'Authorization': token
           },
@@ -45,7 +48,38 @@ const DepositarRetirar = () => {
       }
     };
 
+    const fetchUserBalance = async () => {
+      try {
+        const balanceResponse = await fetch('http://localhost:3001/api/wallet/balance', {
+          headers: {
+            'Authorization': token
+          },
+        });
+        const balanceData = await balanceResponse.json();
+        const btcBalance = balanceData.totalBalance / 100000000; // Convertir satoshis a BTC
+        setUserBalance(btcBalance);
+      } catch (error) {
+        console.error('Error fetching user balance:', error);
+      }
+    };
+    const fetchUserInfo = async () => {
+      try {
+        const userInfoResponse = await fetch('http://localhost:3001/api/getUserInfo', {
+          headers: {
+            'Authorization': token
+          },
+        });
+        const userInfoData = await userInfoResponse.json();
+        const fullAvatarURL = `http://localhost:3001/${userInfoData.avatar}`;
+        setUserAvatar(fullAvatarURL);
+      } catch (error) {
+        console.error('Error fetching user info:', error);
+      }
+    };
+
     fetchWalletAddress();
+    fetchUserBalance();
+    fetchUserInfo();
 
     fetch('http://localhost:3001/api/verificationStatus', {
       headers: {
@@ -61,31 +95,10 @@ const DepositarRetirar = () => {
         console.error('Hubo un error al obtener el estado de verificación:', error);
         setIsLoading(false);
       });
-  }, [token]);
 
-  useEffect(() => {
-    const fetchUserBalance = async () => {
-      try {
-        const balanceResponse = await fetch('http://localhost:3001/api/wallet/balance', {
-          headers: {
-            'Authorization': token
-          },
-        });
-        const balanceData = await balanceResponse.json();
-        const btcBalance = balanceData.totalBalance / 100000000; // Convertir satoshis a BTC
-        setUserBalance(btcBalance);
-      } catch (error) {
-        console.error('Error fetching user balance:', error);
-      }
-    };
-  
-    fetchUserBalance();
-  }, [token]);
-  
+}, [token, setIsLoading]);
 
-  if (isLoading) {
-    return <Loading />;
-  }
+  
 
   const isVerified = verificationStatus === 'verificado';
 
@@ -187,7 +200,6 @@ const DepositarRetirar = () => {
   };
   
 
-  
 
   
   return (
@@ -196,7 +208,7 @@ const DepositarRetirar = () => {
       <div className="main-content-wrapper">
         <div className="header-dashboard">
           <div className="header-left">
-            <img src={avatar} alt="Avatar" className="avatar" />
+            <img src={userAvatar} alt="Avatar" className="avatar" />
             <h1>Depositar Retirar Bitcoin</h1>
             <img src={verificationImage} alt="Estado de verificación" className="verification-status-image" />
             <span className={verificationClass}>{verificationText}</span>
@@ -241,7 +253,7 @@ const DepositarRetirar = () => {
                       <span>Dirección</span>
                       <div className="address-with-button">
                         <span className='wallet-address'>{walletAddress}</span>
-                        <button onClick={() => navigator.clipboard.writeText(walletAddress)}>Copiar</button>
+                        <CopyToClipboard textToCopy={walletAddress}/>
                       </div>
                     </div>
                   </div>
@@ -284,35 +296,42 @@ const DepositarRetirar = () => {
 
                 <div className="input-group">
                   <label>Monto</label>
-                  <input type="number" value={amount} onChange={handleAmountChange} placeholder="0.0 BTC" className={inputError ? 'input-error' : ''} />
+                  <input type="number" value={amount} onChange={handleAmountChange} placeholder="Mínimo 0.0001" className={inputError ? 'input-error' : ''} />
                   {inputError && <div className="error-message">{inputError}</div>}
+                  <div className="user-balance">
+                    <span>Saldo total: </span>
+                    <span>{userBalance} BTC</span>
+                  </div>
+                  <div className="network-fee">
+                    <span>Comisión de la red: </span>
+                    <span>{COMMISSION} BTC</span>
+                  </div>
                 </div>
 
-                <div className="user-balance">
-                  <span>Saldo total: </span>
-                  <span>{userBalance} BTC</span>
-                </div>
+
                 
-                <div className="network-fee">
-                  <span>Comisión de la red: </span>
-                  <span>{COMMISSION} BTC</span>
-                </div>
 
-                <div className="input-group">
-                  <label>Cantidad a recibir</label>
-                  <input type="number" value={netAmount} placeholder="0.0 BTC" readOnly />
-                </div>
 
                 <div className="toggle-option">
-                  <button onClick={toggleAmountType}>
-                    Cambiar cantidad de retiro a cantidad recibida
-                  </button>
+                  <div className="display-amount-group">
+                    <label>Cantidad a recibir</label>
+                    <div data-bn-type="text" className="recieve-amount" >
+                      {netAmount} BTC
+                    </div>
+                  </div>
+                <div className="toggle-button-container" onClick={toggleAmountType} style={{ cursor: 'pointer' }}>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" className="toggle-icon">
+                      <path d="M21 7.5v3H2.5l7-7v4H21zM3 16.5v-3h18.5l-7 7v-4H3z" fill="currentColor"></path>
+                    </svg>
+                    <div data-bn-type="text" className="toggle-text">Cambiar cantidad de retiro a cantidad recibida</div>
+                  </div>
                 </div>
+                <button className="withdraw-button">Retirar</button>
               </div>
             )}
 
         </div>
-        <VerificationOverlay verificationStatus={verificationStatus} />
+        {verificationStatus !== null && <VerificationOverlay verificationStatus={verificationStatus} />}
       </div>
       <SidebarRight />
     </div>

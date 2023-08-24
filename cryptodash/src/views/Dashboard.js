@@ -1,29 +1,49 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState} from 'react';
 import './Dashboard.css';
 import './CommonStylesMenus.css';
-import Sidebarleft from '../components/SidebarLeft';
-import SidebarRight from '../components/SidebarRight';
-import avatar from '../assets/avatar.png';
+import Sidebarleft from '../components/sidebars/SidebarLeft';
+import SidebarRight from '../components/sidebars/SidebarRight';
 import btclogo from '../assets/bitcoin-logo.png';
 import VerificationOverlay from '../components/VerificationOverlay'; 
 import verifiedImage from '../assets/verified.png';
 import inVerificationImage from '../assets/in-verification.png';
 import notVerifiedImage from '../assets/not-verified.png';
-import Loading from '../components/Loading';
+import { useLoading } from '../components/layout/LoadingContext';
+import TransactionDetailPopup from '../components/popups/TransactionDetailPopup';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 const Dashboard = () => {
   const [clientName, setClientName] = useState(null);
   const [verificationStatus, setVerificationStatus] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [hasWallet, setHasWallet] = useState(false);
+  const [hasWallet, setHasWallet] = useState(null);
   const [showWalletPopup, setShowWalletPopup] = useState(false);
   const [bitcoinBalance, setBitcoinBalance] = useState(0);
   const [transactions, setTransactions] = useState([]);
+  const { setIsLoading } = useLoading();
+  const [selectedTransaction, setSelectedTransaction] = useState(null);
+  const [userAvatar, setUserAvatar] = useState(null); // avatar por defecto
+
   const token = localStorage.getItem('authToken');
+  
+  const translateTransactionType = (type) => {
+    switch (type) {
+      case 'deposit':
+        return 'Depósito';
+      case 'withdrawal':
+        return 'Retiro';
+      case 'send':
+        return 'Envío';
+      case 'receive':
+        return 'Recibo';
+      default:
+        return type; // En caso de que se reciba un tipo no esperado, se muestra tal cual
+    }
+  };
 
   useEffect(() => {
     const fetchData = async () => {
       try {
+        setIsLoading(true)
         const verificationResponse = await fetch('http://localhost:3001/api/verificationStatus', {
           headers: {
             'Authorization': token
@@ -31,18 +51,15 @@ const Dashboard = () => {
         });
         const verificationData = await verificationResponse.json();
         setVerificationStatus(verificationData.status);
-  
-        if (verificationData.status === 'en revisión' || verificationData.status === 'verificado') {
-          const formDataResponse = await fetch('http://localhost:3001/formData', {
-            headers: {
-              'Authorization': token
-            },
-          });
-          const formData = await formDataResponse.json();
-          if (formData && formData.personalInformation) {
-            setClientName(formData.personalInformation.nombres);
-          }
-        }
+        const userInfoResponse = await fetch('http://localhost:3001/api/getUserInfo', {
+          headers: {
+            'Authorization': token
+          },
+        });
+        const userInfoData = await userInfoResponse.json();
+        const fullAvatarURL = `http://localhost:3001/${userInfoData.avatar}`;
+        setUserAvatar(fullAvatarURL);
+        setClientName(userInfoData.nombreDeUsuario);
   
         // Verificar si el usuario tiene una billetera
         const walletExistResponse = await fetch('http://localhost:3001/api/wallet/exist', {
@@ -83,7 +100,7 @@ const Dashboard = () => {
     };
   
     fetchData();
-  }, [token]);
+  }, [token,setIsLoading]);
   console.log(token);
   
 
@@ -108,9 +125,6 @@ const Dashboard = () => {
     }
   };
 
-  if (isLoading) {
-    return <Loading />;
-  }
 
   let verificationImage;
   let verificationText;
@@ -161,7 +175,7 @@ const Dashboard = () => {
       <div className="main-content-wrapper">
         <div className="header-dashboard">
           <div className="header-left">
-            <img src={avatar} alt="Avatar" className="avatar" />
+          <img src={userAvatar} alt="Avatar" className="avatar" />
             <h1>Bienvenido {clientName && verificationStatus !== 'no verificado' ? clientName : ''}</h1>
             <img src={verificationImage} alt="Estado de verificación" className="verification-status-image" />
             <span className={verificationClass}>{verificationText}</span>
@@ -186,15 +200,20 @@ const Dashboard = () => {
                 <h2>Registro de Transacciones</h2>
                 {transactions.map((transaction, index) => (
                   <div className="transaction-item" key={index}>
-                    <div className={`transaction-arrow ${['deposit', 'recibo'].includes(transaction.type) ? 'green-arrow' : 'red-arrow'}`}>
-                      {['deposit', 'receive'].includes(transaction.type) ? '↑' : '↓'}
+                    <div className={`transaction-arrow ${['deposit', 'receive'].includes(transaction.type) ? 'green-arrow' : 'red-arrow'}`}>
+                      {['deposit', 'receive'].includes(transaction.type) ? 
+                        <FontAwesomeIcon icon="arrow-down"  /> : 
+                        <FontAwesomeIcon icon="arrow-up"  />
+                      }
                     </div>
                     <div className="transaction-details">
-                      <span>{new Date(transaction.date).toLocaleDateString()}</span>
+                      {/* Modificación en la forma de mostrar la fecha para incluir hora y minutos */}
+                      <span>{new Date(transaction.date).toLocaleDateString('es-ES', { year: 'numeric', month: '2-digit', day: '2-digit' }) + ' ' + new Date(transaction.date).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}</span>
                       <span>{formatBitcoinBalanceClean(transaction.amount)}</span>
-                      <span>{transaction.type}</span>
-                      {/* Puedes agregar más detalles aquí si lo consideras necesario */}
+                      {/* Uso de la función para traducir el tipo de transacción al español */}
+                      <span>{translateTransactionType(transaction.type)}</span>
                     </div>
+                    <button className="transaction-detail-button" onClick={() => setSelectedTransaction(transaction)}>Ver Detalle</button>
                   </div>
                 ))}
               </div>
@@ -207,7 +226,13 @@ const Dashboard = () => {
             <button onClick={() => setShowWalletPopup(false)}>Continuar</button>
           </div>
         )}
-        <VerificationOverlay verificationStatus={verificationStatus} />
+        {selectedTransaction && (
+          <TransactionDetailPopup
+            transaction={selectedTransaction}
+            onClose={() => setSelectedTransaction(null)}
+          />
+        )}
+         {verificationStatus !== null && <VerificationOverlay verificationStatus={verificationStatus} />}
       </div>
       <SidebarRight />
     </div>

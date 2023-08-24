@@ -1,0 +1,45 @@
+.sidebar-left {
+  flex: 0 0 250px;
+  background-color: #f7f7f7; /* Color de fondo más suave */
+  padding: 20px;
+  min-height: 100%;
+  box-shadow: 0px 0 10px rgba(0, 0, 0, 0.05); /* Sombra más suave */
+}
+
+.sidebar-left .logo {
+  display: block;
+  margin-bottom: 30px; /* Espacio adicional debajo del logo */
+  width: 150px; /* Ajusta según el tamaño de tu logo */
+}
+
+.sidebar-left nav a {
+  display: flex;
+  align-items: center; /* Alinea verticalmente el texto y el icono */
+  padding: 12px 20px;
+  color: #555;
+  text-decoration: none;
+  margin-bottom: 15px;
+  border-radius: 8px; /* Bordes más redondeados */
+  transition: background-color 0.3s, color 0.3s;
+  font-size: 16px; /* Tamaño de fuente más grande */
+}
+
+.sidebar-left nav a .fa-icon {
+  margin-right: 8px;
+}
+
+/* Puedes añadir un ícono antes del texto con algo como esto */
+.sidebar-left nav a::before {
+  margin-right: 10px;
+}
+
+.sidebar-left nav a:hover {
+  background-color: #e6e6e6;
+  color: #333;
+}
+
+.sidebar-left nav a.active {
+  background-color: var(--primary-color); /* Color primario */
+  color: white;
+  font-weight: bold;
+}

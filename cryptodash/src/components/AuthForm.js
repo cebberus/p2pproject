@@ -23,10 +23,14 @@ const AuthForm = () => {
 
 
 
-  const toggleForm = () => {
-    setIsLogin(!isLogin);
+  const toggleForm = (formType) => {
+    if (formType === 'login') {
+      setIsLogin(true);
+    } else if (formType === 'register') {
+      setIsLogin(false);
+    }
   };
-
+  
   const navigate = useNavigate();
 
   const loginUser = async (email, password) => {
@@ -119,13 +123,14 @@ const AuthForm = () => {
           <img src={logo} alt="React Logo" />
           {/* Otro contenido a la izquierda del formulario aquí */}
         </div>
-        <div className="form-container">
-          <div className="inner-form-container">
-            <div className="form-header">
-              <button type="button" className={isLogin ? 'active' : ''} onClick={toggleForm}>Iniciar Sesión</button>
-              <button type="button" className={!isLogin ? 'active' : ''} onClick={toggleForm}>Registrarse</button>
+        <div className="form-container-log">
+          <div className="inner-form-container-log">
+            <div className="form-header-log">
+            <button type="button" className={isLogin ? 'active' : ''} onClick={() => toggleForm('login')}>Iniciar Sesión</button>
+            <button type="button" className={!isLogin ? 'active' : ''} onClick={() => toggleForm('register')}>Registrarse</button>
+
             </div>
-            <div className="form-content">
+            <div className="form-content-log">
               {isLogin ? (
                 <div id="login-form" className="form">
                   <div className="email-container">
@@ -214,7 +219,7 @@ const AuthForm = () => {
           </div>
         </div>
       </div>
-        {errorMessage && <div className="error-message">{errorMessage}</div>}
+        {errorMessage && <div className="error-message-log">{errorMessage}</div>}
         {showLoginErrorPopup && (
           <div className="login-error-popup">
             <div className="login-error-popup-content">

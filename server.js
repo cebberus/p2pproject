@@ -15,6 +15,8 @@ const bip32 = BIP32Factory(ecc);
 const testnet = bitcoin.networks.testnet;
 const { verifyDataWithForm} = require('./services/verificationidentity/verificationService');
 const { isValidAddress, getSourceWalletForVirtualFunds } = require('./services/bitcoin/walletService');
+const fs = require('fs');
+const path = require('path');
 
 
 
@@ -33,6 +35,10 @@ const app = express();
 app.use(bodyParser.json({ limit: '50mb' })); // Aumenta el límite aquí
 app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 app.use(cors());
+app.use('/components', express.static('components'));
+app.use('/components/assets', express.static(path.join(__dirname, 'components/assets')));
+
+
 
 // Middleware para verificar el token
 const verifyToken = (req, res, next) => {
@@ -69,8 +75,24 @@ const UserSchema = new mongoose.Schema({
   email: String,
   password: String,
   verificationStatus: { type: String, enum: ['no verificado', 'verificado', 'en revisión'], default: 'no verificado' }, // Cambio aquí
+  nombreDeUsuario: {type: String, unique: true, required: true},
+  avatar: {type: String, default: 'components/assets/avatars/avatar1.jpg'}
 });
 const User = mongoose.model('User', UserSchema);
+
+function generarNombreDeUsuario() {
+  const caracteres = 'abcdefghijklmnopqrstuvwxyz0123456789';
+  let resultado = 'user-';
+  for (let i = 0; i < 5; i++) {
+      resultado += caracteres.charAt(Math.floor(Math.random() * caracteres.length));
+  }
+  return resultado;
+}
+
+/////////////////////////////////ENDPOINTS TEMPORALES/////////////////////////////////
+
+
+/////////////////////////////////ENDPOINTS TEMPORALES/////////////////////////////////
 
 
 const VerificationSchema = new mongoose.Schema({
@@ -93,6 +115,9 @@ const WalletSchema = new mongoose.Schema({
 });
 
 const Wallet = mongoose.model('Wallet', WalletSchema);
+
+
+
 
 
 const ExternalTransactionSchema = new mongoose.Schema({
@@ -136,11 +161,24 @@ app.post('/register', async (req, res) => {
   // Encriptar la contraseña
   const hashedPassword = await bcrypt.hash(password, 10);
 
+  // Generar nombre de usuario
+  const nombreDeUsuario = generarNombreDeUsuario();
+
+  // Obtener la lista de avatares disponibles
+  const avatarsDirectory = path.join(__dirname, 'components/assets/avatars');
+  const avatarFiles = fs.readdirSync(avatarsDirectory);
+
+  // Seleccionar un avatar al azar de la lista
+  const randomAvatar = avatarFiles[Math.floor(Math.random() * avatarFiles.length)];
+  const avatar = `components/assets/avatars/${randomAvatar}`;
+
   // Crear un nuevo usuario
   const user = new User({
     email,
     password: hashedPassword,
-    verificationStatus: 'no verificado', // Cambio aquí
+    verificationStatus: 'no verificado',
+    nombreDeUsuario,
+    avatar
   });
 
   // Guardar el usuario en la base de datos
@@ -171,6 +209,79 @@ app.post('/login', async (req, res) => {
   res.json({ token, userId: user._id, email: user.email, verificationStatus: user.verificationStatus }); // Cambio aquí
 });
 
+
+
+
+app.get('/api/getUserInfo', verifyToken, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+
+    // Buscar información del usuario en la base de datos
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'Usuario no encontrado' });
+    }
+
+    // Enviar la información del usuario como respuesta
+    res.status(200).json({
+      userId: user._id,
+      email: user.email,
+      verificationStatus: user.verificationStatus,
+      nombreDeUsuario: user.nombreDeUsuario, // Agregado aquí
+      avatar: user.avatar // Agregado aquí
+    });
+  } catch (error) {
+    console.error('Error al obtener la información del usuario:', error);
+    res.status(500).json({ message: 'Error al obtener la información del usuario' });
+  }
+});
+
+app.get('/api/avatars', verifyToken, (req, res) => {
+  const avatarsDirectory = path.join(__dirname, 'components/assets/avatars');
+
+  fs.readdir(avatarsDirectory, (err, files) => {
+      if (err) {
+          console.error('Error al leer el directorio de avatares:', err);
+          res.status(500).json({ message: 'Error interno del servidor' });
+          return;
+      }
+
+      // Construye las URLs de los avatares
+      const avatars = files.map(file => `http://localhost:3001/components/assets/avatars/${file}`);
+      res.json(avatars);
+  });
+});
+
+
+app.put('/api/updateProfileUsername', verifyToken, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const { nombreDeUsuario } = req.body;
+
+    // Actualizar la información del usuario en la base de datos
+    await User.findByIdAndUpdate(userId, { nombreDeUsuario});
+
+    res.status(200).json({ message: 'Perfil actualizado con éxito' });
+  } catch (error) {
+    console.error('Error al actualizar el perfil:', error);
+    res.status(500).json({ message: 'Error al actualizar el perfil' });
+  }
+});
+
+app.put('/api/updateProfileAvatar', verifyToken, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const { avatar } = req.body;
+
+    // Actualizar la información del usuario en la base de datos
+    await User.findByIdAndUpdate(userId, { avatar });
+
+    res.status(200).json({ message: 'Perfil actualizado con éxito' });
+  } catch (error) {
+    console.error('Error al actualizar el perfil:', error);
+    res.status(500).json({ message: 'Error al actualizar el perfil' });
+  }
+});
 
 // Ruta para verificar la validez del token
 app.get('/api/checkTokenValidity', verifyToken, (req, res) => {
@@ -459,7 +570,7 @@ app.get('/api/tracked-addresses', async (req, res) => {
     res.json({ addresses: addresses });
 });
 
-app.get('/api/wallet/adress', verifyToken, async (req, res) => {
+app.get('/api/wallet/address', verifyToken, async (req, res) => {
   try {
     const userId = req.user.userId;
     const wallet = await Wallet.findOne({ userId: userId });

@@ -2,10 +2,15 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px 32px;
+  padding: 10px 32px;
   margin-left: 9.6px;
   margin-right: 9.6px;
-  background-color: #ffffff; /* Puedes cambiar el color según tu diseño */
+  background-color: #f7f7f7; /* Color de fondo más suave */
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+  position: sticky;
+  top: 0; 
+  z-index: 1000;
+  transition: all 0.3s; /* Transición suave */
 }
 
 .header-content {
@@ -16,32 +21,38 @@
 }
 
 .logo-container img {
-  height: 50px; /* Ajusta según el tamaño de tu logo */
+  height: 50px;
+  transition: transform 0.3s; /* Transición suave */
+}
+
+.logo-container img:hover {
+  transform: scale(1.05); /* Efecto zoom al pasar el cursor */
 }
 
 .nav-links {
   display: flex;
-  gap: 35px; /* Espacio entre los enlaces */
+  gap: 40px; /* Mayor espacio entre enlaces */
 }
 
 .nav-item {
-  display: inline-block;
+  display: inline-flex;
 }
 
 .nav-links a {
-  color: #000000; /* Texto negro */
-  text-decoration: none; /* Sin subrayado */
-  font-weight: 400;
+  color: #333; /* Color de texto más suave */
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 18px; /* Tamaño de fuente más grande */
+  transition: color 0.3s; /* Transición suave */
 }
 
-/* Cambia el color del enlace al pasar el cursor sobre él (hover) */
 .nav-links a:hover {
-  color: #555555; /* Puedes ajustar este color según prefieras */
-}  
+  color: #007BFF; /* Color de hover */
+}
 
 .auth-buttons {
   display: flex;
-  gap: 10px; /* Espacio entre los botones */
+  gap: 15px; /* Mayor espacio entre botones */
 }
 
 .auth-buttons a {
@@ -50,18 +61,31 @@
 
 .login-btn,
 .register-btn {
-  padding: 10px 20px;
+  padding: 12px 24px; /* Botones más grandes */
   border: none;
   border-radius: 5px;
   cursor: pointer;
+  transition: all 0.3s; /* Transición suave */
+  font-size: 18px; /* Tamaño de fuente más grande */
 }
 
 .login-btn {
-  background-color: #555; /* Color de fondo del botón de inicio de sesión */
-  color: #fff; /* Color del texto del botón de inicio de sesión */
+  background-color: #555;
+  color: #fff;
+}
+
+.login-btn:hover {
+  background-color: #333; /* Efecto hover */
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1); /* Sombra al pasar el cursor */
 }
 
 .register-btn {
-  background-color: #007BFF; /* Color de fondo del botón de registro */
-  color: #fff; /* Color del texto del botón de registro */
+  background-color: #007BFF;
+  color: #fff;
 }
+
+.register-btn:hover {
+  background-color: #0056b3; /* Efecto hover */
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1); /* Sombra al pasar el cursor */
+}
+

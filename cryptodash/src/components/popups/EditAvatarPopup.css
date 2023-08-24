@@ -1,0 +1,58 @@
+.avatars-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(60px, 1fr)); /* Esto creará columnas de al menos 60px y tantas como se ajusten al ancho del contenedor */
+    gap: 10px; /* Espacio entre avatares */
+}
+
+
+.avatar-circle {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    overflow: hidden;
+    margin: 10px;
+    cursor: pointer;
+    border: 2px solid transparent;
+}
+
+.avatar-circle img {
+    width: 100%;
+    height: 100%;
+}
+
+.avatar-circle.highlighted {
+    border-color: #007BFF; /* Color de resaltado, puedes cambiarlo según tu diseño */
+}
+
+.popup-overlay-editavatar {
+    /* Estilos para el overlay del popup */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.popup-content-editavatar {
+    /* Estilos para el contenido del popup */
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+}
+
+.popup-overlay-editavatar button{
+    margin: 10px;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 5px;
+    background-color: var(--primary-color);
+    color: var(--secondary-color);
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}

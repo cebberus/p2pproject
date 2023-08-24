@@ -1,19 +1,20 @@
 
 .dashboard-container {
-    display: flex;
-    width: 100%;
-    height: 100vh;
-  }
+  display: flex;
+}
   
   .main-content-wrapper {
+    padding: 20px;
+    width: 100%;
     position: relative;
     flex: 1;
+    min-height: 100vh;
   }
   
   .main-content {
     flex: 1;
     padding: 20px;
-    background-color: #ecf0f1;
+    background-color: #f7f9fc;
     position: relative;
   }
   
@@ -44,47 +45,49 @@
   }
   
   /* Estilos para el menú dual */
-.menu-dual {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-bottom: 20px;
-  border-radius: 5px;
-  overflow: hidden;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-}
+  .menu-dual {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 20px;
+    border-radius: 8px; /* Bordes más redondeados */
+    overflow: hidden;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Sombra más suave */
+  }
 
-.menu-dual button {
-  flex: 1;
-  padding: 10px 20px;
-  font-size: 16px;
-  border: none;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-  background-color: #f7f7f7;
-  color: #333;
-}
+  .menu-dual button {
+    flex: 1;
+    padding: 12px 24px; /* Padding más amplio */
+    font-size: 16px;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    background-color: #f9f9f9; /* Color de fondo más claro */
+    color: #555; /* Color de texto más suave */
+  }
 
 .menu-dual button.active {
-  background-color: #007BFF; /* Color principal cuando está activo */
-  color: #fff;
+  background-color: var(--primary-color); /* Color principal cuando está activo */
+  color: var(--secondary-color);
+  transform: scale(1.05);
 }
 
 .menu-dual button:not(.active):hover {
   background-color: #e6e6e6; /* Color al pasar el ratón por encima */
+  transform: scale(1.02); /* Efecto de escala al pasar el ratón por encima */
 }
 
 /* Estilos para los contenedores de enviar y recibir */
 .send-container, .receive-container, .deposit-container, .withdraw-container {
-  padding: 20px;
+  padding: 24px; /* Padding más amplio */
   border: 1px solid #e6e6e6;
-  border-radius: 10px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  border-radius: 12px; /* Bordes más redondeados */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08); /* Sombra más suave */
 }
 
 /* Estilos para los select boxes */
-.select-container, .input-group {
-  margin: 10px 0;
+.select-container, .input-group, .wallet-address-container, .qr-and-address, .address-and-copy, .address-with-button {
+  margin-bottom: 20px; /* Espaciado uniforme */
 }
 
 
@@ -93,16 +96,17 @@
 /* Estilo para el título del select box */
 .select-container label, .wallet-address-container label, .input-group label {
   display: block;
-  margin-bottom: 5px;
-  font-weight: bold;
+  margin-bottom: 8px; /* Espaciado más pequeño */
+  font-weight: 600; /* Peso de fuente semi-negrita */
+  color: #333; /* Color de texto más oscuro */
 }
 
 
 .btc-logo {
-  width: 25px; /* Ajusta según el tamaño deseado */
+  width: 25px;
   height: auto;
-  margin-right: 5px; /* Espacio entre la imagen y el texto */
-  vertical-align: middle; /* Alinea la imagen con el texto */
+  margin-right: 8px; /* Espaciado más amplio */
+  vertical-align: middle;
 }
 
 .wallet-address-container {
@@ -112,10 +116,9 @@
   
 }
 
-.qr-and-address {
+.qr-and-address, .address-and-copy, .address-with-button {
   display: flex;
   align-items: center;
-  margin-top: 10px; /* Ajusta según tus necesidades */
 }
 
 .address-and-copy {
@@ -145,38 +148,68 @@
 }
 
 
-.wallet-address{
-  font-weight: bold;
+.wallet-address {
+  font-weight: 600; /* Peso de fuente semi-negrita */
 }
 
 
 
-
-.input-group input{
-  width: 99%;
-  height: 35px;
-}
-
-
-
-.toggle-option {
-  display: flex;
-  justify-content: center;
-  margin-top: 20px;
-}
-
-.toggle-option button {
-  padding: 10px 20px;
-  background-color: #007BFF;
-  color: #fff;
-  border: none;
+.input-group input {
+  width: 100%; /* Ancho completo */
+  height: 40px; /* Altura más amplia */
+  border: 1px solid var(--neutral-gray);
   border-radius: 5px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
+  padding: 0 12px; /* Padding interno */
+  border: 1px solid var(--neutral-gray);
+  font-size: 16px;
+  box-sizing: border-box;
 }
 
-.toggle-option button:hover {
-  background-color: #0056b3;
+.input-group input:focus{
+  outline: none;
+  box-shadow: inset 0 0 0 2px var(--primary-color);
+}
+
+
+.transfer-button, .withdraw-button{
+  margin-top: 24px; /* Espaciado más amplio */
+}
+
+.transfer-button, .withdraw-button {
+  padding: 12px 24px; /* Padding más amplio */
+  background-color: var(--primary-color);
+  color: var(--secondary-color);
+  border: none;
+  border-radius: 8px; /* Bordes más redondeados */
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.toggle-button-container {
+  padding: 0;
+  outline: 0;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+  box-sizing: border-box;
+  margin: 4px 0px 0px;
+  min-width: 0px;
+  display: flex;
+  cursor: not-allowed;
+  color: rgb(94, 102, 115);
+  -webkit-box-align: center;
+  align-items: center;
+  width: auto; /* Asegurarse de que el ancho sea automático */
+  height: auto; /* Asegurarse de que la altura sea automática */
+}
+
+.toggle-icon {
+  width: 20px; /* Ajusta el tamaño del SVG */
+  height: 20px; /* Ajusta el tamaño del SVG */
+  margin-right: 8px; /* Espacio entre el SVG y el texto */
+}
+
+.toggle-text {
+  font-size: 14px; /* Ajusta el tamaño del texto */
+  margin: 0; /* Asegurarse de que no haya márgenes adicionales */
 }
 
 /* CommonStylesMenus.css */
@@ -187,5 +220,27 @@
 
 .error-message {
   color: red;
-  margin-top: 5px;
+  margin-top: 8px; /* Espaciado más amplio */
+  font-size: 14px; /* Tamaño de fuente más pequeño */
+}
+
+.display-amount-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: bold;
+
+}
+
+.recieve-amount {
+  font-size: 28px;
+  font-weight: 600;
+  line-height: 36px;
+  color: rgb(0, 0, 0);
+  word-break: break-all;
+  /* Aquí puedes agregar todos los otros estilos que proporcionaste */
+  text-size-adjust: 100%;
+}
+
+.user-balance{
+  margin-top: 16px;
 }

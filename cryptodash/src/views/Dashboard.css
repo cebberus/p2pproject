@@ -1,18 +1,9 @@
 /*Dashboard.css*/
 
-.dashboard-container {
-  display: flex;
-  height: 100vh;
-  width: 100%;
-}
-
-.main-content-wrapper{
-  padding: 20px;
-  width: 100%;
-}
 
 
-.balance-container {
+
+.balance-container, .transactions-container {
   background-color: #fff;
   padding: 20px;
   border-radius: 5px;
@@ -25,7 +16,9 @@
   gap: 10px;
 }
 
-
+.transactions-container{
+  margin-top: 20px;
+}
 
 .transactions-container th {
   background-color: #f2f2f2;
@@ -132,29 +125,68 @@
 }
 
 
+/* Estilo base para las tarjetas de transacciones */
 .transaction-item {
   display: flex;
-  align-items: center;
-  padding: 10px;
-  border: 1px solid #e0e0e0;
-  margin-bottom: 10px;
+  justify-content: space-between; /* Alinea los elementos a los extremos */
+  align-items: center; /* Alinea los elementos verticalmente al centro */
+  padding: 15px;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  margin-bottom: 15px;
+  transition: transform 0.3s, box-shadow 0.3s;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
 }
 
+.transaction-details {
+  display: flex;
+  gap: 20px; /* Espacio entre los elementos */
+  align-items: center; /* Alinea los elementos verticalmente al centro */
+  font-weight: 500;
+}
+
+
+.transaction-detail-button {
+  background-color: #007BFF;
+  color: #fff;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.transaction-detail-button:hover {
+  background-color: #0056b3; /* Un tono más oscuro para el hover */
+}
+
+/* Efecto hover para las tarjetas */
+.transaction-item:hover {
+  transform: translateY(-5px); /* Eleva ligeramente la tarjeta */
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1); /* Sombra más pronunciada */
+}
+
+/* Estilo para los iconos de las transacciones */
 .transaction-arrow {
   font-size: 24px;
-  margin-right: 10px;
+  margin-right: 15px;
+  flex-shrink: 0;
+  align-items: center; /* Evita que el icono se reduzca */
 }
 
-
-
+/* Colores específicos para diferentes tipos de transacciones */
 .green-arrow {
-  color: green;
+  color: #4CAF50; /* Verde para depósitos */
 }
 
 .red-arrow {
-  color: red;
+  color: #F44336; /* Rojo para retiros */
 }
 
-.transaction-details span {
-  margin-right: 10px;
+/* Estilo para los detalles de las transacciones */
+.transaction-details {
+  flex-grow: 1; /* Permite que los detalles ocupen el espacio restante */
 }
+
+
+

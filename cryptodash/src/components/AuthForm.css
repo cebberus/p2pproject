@@ -1,79 +1,87 @@
+
+
 .auth-page-container {
     display: flex;
     height: 100vh;
-  }
+}
   
-.auth-logo-container {
+.auth-logo-container, .form-container-log {
     flex: 1;
     display: flex;
     justify-content: center;
     align-items: center;
-  }
+}
+
+.inner-form-container-log {
+  width: 400px;
+  border: 1px solid var(--neutral-gray);
+  border-radius: 20px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
   
-.form-container {
-    flex: 1;
-    display: flex;
-    justify-content: center; /* Centra el formulario horizontalmente en el lado derecho */
-    align-items: center; /* Centra el formulario verticalmente */
-  }
+.form-header-log {
+  display: flex;
+  justify-content: space-around;
+  background: var(--secondary-color);
+  padding: 15px 0;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+}
   
-.inner-form-container {
-    width: 620px; /* Ancho del contenedor del formulario */
-    border: 1px solid #ccc;
-    border-radius: 5px;
-  }
+.form-header-log button {
+  padding: 10px 20px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 16px;
+  transition: all 0.3s;
+}
+
+.form-header-log button:hover {
+  transform: scale(1.05);
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.form-header-log button:focus {
+    outline: none;
+    
+}
+
+.form-header-log button.active {
+  font-weight: bold;
+  background-color: rgba(255, 255, 255, 0.2);
+}
   
-.form-header {
-    display: flex;
-    justify-content: space-around;
-    background-color: #f0f0f0;
-    border-bottom: 1px solid #ccc;
-  }
+.form-content-log {
+  padding: 20px;
+  background-color: #fff;
+}
   
-.form-header button {
-    padding: 10px;
-    border: none;
-    background: none;
-    cursor: pointer;
-    transition: background-color 0.3s;
-  }
-  
-.form-header button.active {
-    font-weight: bold;
-    background-color: #e0e0e0;
-  }
-  
-.form-content {
-    padding: 20px;
-    margin-left: 100px;
-    margin-right: 100px;
-  }
-  
-.form {
-    /* Estilos para los formularios (puedes reutilizar los estilos anteriores) */
-  }
-  
+
 .hidden {
     display: none;
-  }
-  
-.password-container {
-  position: relative;
-  display: flex;
-  height: 50px;
-  margin-bottom: 20px;
 }
-
-.email-container{
+  
+.password-container, .email-container {
     position: relative;
     display: flex;
-    margin-bottom: 20px;
-    margin-top: 20px;
-    height: 50px
+    margin-bottom: 25px;
+    height: 50px;
+    border: 1px solid var(--neutral-gray);
+    border-radius: 5px;
+    overflow: hidden;
 }
 
-.password-container input, .email-container input{
-    width: 371px;
+.password-container input, .email-container input {
+  width: 100%;
+  border: none;
+  padding: 10px;
+  font-size: 14px;
+}
+
+.password-container input:focus, .email-container input:focus {
+    outline: none;
+    box-shadow: inset 0 0 0 2px var(--primary-color);
 }
 
 .password-toggle-icon {
@@ -82,73 +90,44 @@
   top: 50%;
   transform: translateY(-50%);
   cursor: pointer;
-  width: 20px; /* Ajusta según el tamaño de tu imagen */
+  width: 20px;
+  transition: opacity 0.3s ease-in-out;
 }
 
-.login-button {
+.password-toggle-icon:hover {
+    opacity: 0.7;
+}
+
+.login-button, .register-button {
   display: block;
-  margin-top: 10px; /* Ajusta según tus necesidades */
-  background-color: #007BFF; /* Color de fondo del botón de registro */
-  color: #fff; /* Color del texto del botón de registro */
+  margin-top: 10px;
+  background-color: var(--primary-color);
+  color: #fff;
   border: none;
   border-radius: 5px;
   cursor: pointer;
   padding: 14px 20px;
-  width: 379px;
+  width: 100%;
   font-size: 16px;
-}
-.login-button-container{
-    padding-top: 30px;
-    padding-bottom: 30px;
+  transition: all 0.3s;
 }
 
-.terms-container {
-  display: flex;
-  align-items: center;
-  margin: 20px 0;
+.login-button:hover, .register-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
 }
 
-.terms-container label {
-  margin-left: 10px;
+.login-button[disabled], .register-button[disabled] {
+  background-color: var(--neutral-gray);
+  cursor: not-allowed;
 }
 
-.register-button-container {
-  padding-top: 30px;
-  padding-bottom: 30px;
-}
-
-.register-button {
-  display: block;
-  background-color: #007BFF; /* Color de fondo del botón de registro */
-  color: #fff; /* Color del texto del botón de registro */
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  padding: 14px 20px;
-  width: 379px;
-  font-size: 16px;
-}
-
-.login-button[disabled],
-.register-button[disabled] {
-  background-color: #cccccc; /* Color gris */
-  cursor: not-allowed; /* Cambia el cursor a un ícono de "no permitido" */
-}
-
-/* Puedes ajustar el color y otros estilos según tus preferencias */
-.password-mismatch-error {
-  color: red;
+.password-mismatch-error, .password-error {
+  color: var(--error-color);
   font-size: 12px;
   margin-top: -20px;
   padding-bottom: 10px;
 }
-.password-error{
-  color: red;
-  font-size: 12px;
-  margin-bottom: 10px;
-  margin-top: -20px;
-}
-
 
 .login-error-popup {
   position: fixed;
@@ -168,6 +147,7 @@
   padding: 20px;
   border-radius: 5px;
   text-align: center;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
 }
 
 .login-error-popup p {
@@ -176,24 +156,78 @@
 }
 
 .login-error-popup a {
-  color: #007BFF;
+  color: var(--primary-color);
   text-decoration: underline;
-  display: block; /* Hace que el enlace ocupe toda la línea */
+  display: block;
   margin-bottom: 25px;
 }
 
 .login-error-popup-button {
-  margin-top: 10px; /* Espacio adicional entre el enlace y el botón */
+  margin-top: 10px;
 }
 
 .login-error-popup button {
   padding: 14px 20px;
   cursor: pointer;
-  background-color: #007BFF;
+  background-color: var(--primary-color);
   color: #fff;
   border: none;
   border-radius: 5px;
   font-size: 16px;
 }
 
+.return-to-home {
+  margin-top: 20px; /* Ajusta este valor según cuánto espacio desees en la parte superior */
+  margin-left: 20px; /* Ajusta este valor según cuánto espacio desees en el lado izquierdo */
+}
+/* Estilo para el enlace "Regresar al inicio" */
+.return-to-home a {
+  color: #000;
+  text-decoration: none;
+  position: relative;
+  padding-left: 25px;
+  transition: color 0.3s ease;
+}
 
+.return-to-home a:hover {
+  color: var(--primary-color);
+}
+
+.return-to-home a::before {
+  content: '←'; /* ícono de flecha hacia atrás */
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* Estilo para el enlace "He olvidado mi contraseña" */
+.forgot-pass {
+  color: #000;
+  text-decoration: none;
+  position: relative;
+  transition: color 0.3s ease;
+}
+
+.forgot-pass:hover {
+  color: var(--error-color);
+}
+
+.forgot-pass::before {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* Estilo para los enlaces "términos de servicio" y "política de privacidad" */
+.terms-container a {
+  color: #000;
+  text-decoration: none;
+  transition: color 0.3s ease, text-decoration 0.3s ease;
+}
+
+.terms-container a:hover {
+  color: var(--primary-color);
+  text-decoration: underline;
+}

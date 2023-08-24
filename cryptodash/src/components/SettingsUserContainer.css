@@ -1,0 +1,114 @@
+.settings-user-container {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    width: 100%;
+    position: relative;
+    padding-left: 10px;
+}
+.username {
+    margin-left: 10px; /* Espacio entre el avatar y el nombre de usuario */
+    align-self: center; /* Centrar verticalmente en el contenedor flex */
+    font-weight: 500; /* Puedes ajustar el peso de la fuente según tus preferencias */
+}
+
+
+.settings-user-avatar {
+    display: flex;
+    align-items: center; /* Esto centrará verticalmente los elementos hijos */
+    cursor: pointer;
+    position: relative;
+}
+
+
+.settings-user-avatar img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    transition: transform 0.3s ease;
+}
+
+.settings-user-avatar:hover img {
+    transform: scale(1.1);
+}
+
+.settings-user-dropdown-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background-color: #fff;
+    border: none;
+    border-radius: 8px;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    overflow: hidden;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    transform: translateY(-10px);
+    opacity: 0;
+    visibility: hidden;
+    width: 200px; /* Aumentado el ancho del menú desplegable */
+}
+
+.settings-user-avatar:hover .settings-user-dropdown-menu {
+    transform: translateY(0);
+    opacity: 1;
+    visibility: visible;
+}
+
+.settings-user-dropdown-menu a {
+    display: block;
+    padding: 12px 20px;
+    text-decoration: none;
+    color: #333;
+    font-weight: 500;
+    transition: background-color 0.3s ease;
+}
+
+.settings-user-dropdown-menu a:hover {
+    background-color: #f7f7f7;
+}
+
+.fa-icon {
+    width: 20px;
+    margin-right: 10px;
+    vertical-align: middle;
+}
+
+.logout-popup {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+}
+
+.logout-container {
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+.logout-container button {
+    margin: 10px;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 5px;
+    background-color: var(--primary-color);
+    color: var(--secondary-color);
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.logout-container button:hover {
+    background-color: #0056b3;
+}
+
+  
