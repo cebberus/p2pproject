@@ -11,6 +11,7 @@ import notVerifiedImage from '../assets/not-verified.png';
 import Select from 'react-select';
 import QRCode from 'qrcode.react';
 import CopyToClipboard from '../components/buttons/CopyToClipboard';
+import SuccessWithdrawPopup from '../components/popups/SuccessWithdrawPopup';
 
 
 const DepositarRetirar = () => {
@@ -18,18 +19,58 @@ const DepositarRetirar = () => {
   const { setIsLoading } = useLoading(); 
   const [activeMenu, setActiveMenu] = useState('depositar');
   const [walletAddress, setWalletAddress] = useState('');
+  const [withdrawAddress, setWithdrawAddress] = useState('');
   const [selectedCurrency, setSelectedCurrency] = useState(null);
   const [selectedNetwork, setSelectedNetwork] = useState(null);
-  const [amount, setAmount] = useState(null); 
-  const [netAmount, setNetAmount] = useState(0); 
+  const [amount, setAmount] = useState(''); 
+  const [netAmount, setNetAmount] = useState(''); 
   const [isNetAmount, setIsNetAmount] = useState(true); // Estado para rastrear si el usuario quiere recibir el monto neto o el monto total
   const [userBalance, setUserBalance] = useState(0);
   const [inputError, setInputError] = useState('');
   const [userAvatar, setUserAvatar] = useState(null); // avatar por defecto
+  const [isWithdrawPopupOpen, setWithdrawPopupOpen] = useState(true);
 
-  const COMMISSION = 0.00005; // Comisión fija para el ejemplo
-
+  const COMMISSION = 0.00001; // Comisión fija para el ejemplo
   const token = localStorage.getItem('authToken');
+
+
+  const handleWithdraw = async () => {
+    try {
+        console.log("Valor de amount:", amount);
+        const response = await fetch('http://localhost:3001/api/wallet/withdraw', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': token
+            },
+            body: JSON.stringify({
+                externalAddress: withdrawAddress,
+                amountbtc: amount
+            })
+            
+        });
+
+        const data = await response.json();
+
+        // Verifica si la respuesta es exitosa
+        if (response.status === 200 && data.message === 'Retiro programado con éxito. Será procesado pronto.') {
+          setWithdrawPopupOpen(true);
+            console.log('Retiro realizado con éxito!');
+        } 
+        // Manejo de errores específicos devueltos por el servidor
+        else if (response.status === 400) {
+            alert(data.error); // Muestra el mensaje de error específico
+        } 
+        // Otros errores no especificados
+        else {
+            alert('Hubo un error al realizar el retiro.');
+        }
+    } catch (error) {
+        console.error('Error al realizar el retiro:', error);
+    }
+};
+
+
 
   useEffect(() => {
     setIsLoading(true);
@@ -291,7 +332,7 @@ const DepositarRetirar = () => {
 
                 <div className="input-group">
                   <label>Dirección de Retiro</label>
-                  <input type="text" placeholder="Introduce la dirección de BTC" />
+                  <input type="text" placeholder="Introduce la dirección de BTC" value={withdrawAddress} onChange={(e) => setWithdrawAddress(e.target.value)}/>
                 </div>
 
                 <div className="input-group">
@@ -326,7 +367,7 @@ const DepositarRetirar = () => {
                     <div data-bn-type="text" className="toggle-text">Cambiar cantidad de retiro a cantidad recibida</div>
                   </div>
                 </div>
-                <button className="withdraw-button">Retirar</button>
+                <button className="withdraw-button" onClick={handleWithdraw}>Retirar</button>
               </div>
             )}
 
@@ -334,6 +375,7 @@ const DepositarRetirar = () => {
         {verificationStatus !== null && <VerificationOverlay verificationStatus={verificationStatus} />}
       </div>
       <SidebarRight />
+      <SuccessWithdrawPopup isOpen={isWithdrawPopupOpen} onClose={() => setWithdrawPopupOpen(false)} />
     </div>
   );
 };

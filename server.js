@@ -1,6 +1,5 @@
 //server.js
 const axios = require('axios');
-const crypto = require('crypto');
 const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
@@ -9,10 +8,12 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const ecc = require('tiny-secp256k1');
 const bitcoin = require('bitcoinjs-lib');
+const ECPairFactory = require('ecpair');
 const { BIP32Factory } = require('bip32');
 const bip39 = require('bip39');
 const bip32 = BIP32Factory(ecc);
 const testnet = bitcoin.networks.testnet;
+const ECPair = ECPairFactory.ECPairFactory(ecc);
 const { verifyDataWithForm} = require('./services/verificationidentity/verificationService');
 const { isValidAddress, getSourceWalletForVirtualFunds } = require('./services/bitcoin/walletService');
 const fs = require('fs');
@@ -111,7 +112,8 @@ const WalletSchema = new mongoose.Schema({
   address: String,
   privateKey: String,
   balance: Number, // Este es el saldo en la blockchain
-  virtualBalance: Number, // Este es el saldo "virtual" en la plataforma
+  virtualBalance: Number,
+  addressIndex: Number, // Este es el saldo "virtual" en la plataforma
 });
 
 const Wallet = mongoose.model('Wallet', WalletSchema);
@@ -422,6 +424,7 @@ app.post('/verify', verifyToken, async (req, res) => {
 });
 
 //////////////////////////////////////////////////////////// BITCOIN OPERATIONS ///////////////////////////////////////////////////////////////////////////////////
+
 const WebSocket = require('ws');
 const trackWS = () => {
   const ws = new WebSocket('wss://mempool.space/testnet/api/v1/ws');
@@ -536,31 +539,33 @@ const MASTER_SEED_PHRASE = 'genre near parrot vocal demand basic slice leader po
 const seed = bip39.mnemonicToSeedSync(MASTER_SEED_PHRASE);
 
 app.post('/api/createwallet', verifyToken, async (req, res) => {
-    const userId = req.user.userId;
-    const existingWallet = await Wallet.findOne({ userId });
-    if (existingWallet) {
-        return res.status(400).json({ message: 'El usuario ya tiene una billetera creada' });
-    }
-    const root = bip32.fromSeed(seed, testnet);
-    const counter = await Counter.findOne({ name: 'walletAddressCounter' });
-    const child = root.derivePath(`m/44'/0'/0'/0/${counter.value}`);
-    const { address } = bitcoin.payments.p2pkh({ pubkey: child.publicKey, network: testnet });
-    const wallet = new Wallet({
-        userId: userId,
-        address: address,
-        privateKey: child.toWIF(),
-        balance: 0,
-        virtualBalance: 0,
-    });
-    await wallet.save();
-    counter.value += 1;
-    await counter.save();
+  const userId = req.user.userId;
+  const existingWallet = await Wallet.findOne({ userId });
+  if (existingWallet) {
+      return res.status(400).json({ message: 'El usuario ya tiene una billetera creada' });
+  }
+  const root = bip32.fromSeed(seed, testnet);
+  const counter = await Counter.findOne({ name: 'walletAddressCounter' });
+  const addressIndex = counter.value;
+  const child = root.derivePath(`m/44'/0'/0'/0/${addressIndex}`);
+  const { address } = bitcoin.payments.p2pkh({ pubkey: child.publicKey, network: testnet });
+  const wallet = new Wallet({
+      userId: userId,
+      address: address,
+      balance: 0,
+      virtualBalance: 0,
+      addressIndex: addressIndex,
+  });
+  await wallet.save();
+  counter.value += 1;
+  await counter.save();
 
-    // Rastrea la nueva dirección con el WebSocket de Blockchain.com
-    ws.send(JSON.stringify({ "op": "addr_sub", "addr": address }));
+  // Rastrea la nueva dirección con el WebSocket de Blockchain.com
+  ws.send(JSON.stringify({ "op": "addr_sub", "addr": address }));
 
-    res.json({ message: 'Billetera creada con éxito', address: address });
+  res.json({ message: 'Billetera creada con éxito', address: address });
 });
+
 
 // Función para mostrar las direcciones rastreadas en la consola
 app.get('/api/tracked-addresses', async (req, res) => {
@@ -673,10 +678,15 @@ app.post('/api/wallet/send-receive', verifyToken, async (req, res) => {
 const withdrawalQueue = [];
 
 app.post('/api/wallet/withdraw', verifyToken, async (req, res) => {
-  const { externalAddress, amount } = req.body;
+  const { externalAddress, amountbtc } = req.body;
   if (!isValidAddress(externalAddress)) {
     return res.status(400).json({ error: 'Dirección externa inválida' });
   }
+  const parsedAmountbtc = parseFloat(amountbtc);
+  if (isNaN(parsedAmountbtc)) {
+      return res.status(400).json({ error: 'El valor de amountbtc no es un número válido'});
+  }
+  const amount = parsedAmountbtc * 100000000;
   const userWallet = await Wallet.findOne({ userId: req.user.userId });
   const totalBalance = userWallet.balance + userWallet.virtualBalance;
   if (totalBalance < amount) {
@@ -707,41 +717,62 @@ app.post('/api/wallet/withdraw', verifyToken, async (req, res) => {
   }
 });
 
-const PROCESS_INTERVAL = 300000;
+const PROCESS_INTERVAL = 10000;
 setInterval(async () => {
   if (withdrawalQueue.length === 0) {
     return;
   }
   const withdrawal = withdrawalQueue.shift();
   const userWallet = await Wallet.findOne({ userId: withdrawal.userId });
-  const txb = new bitcoin.TransactionBuilder(testnet);
-  const txfee = 10000;
+  const addressIndex = userWallet.addressIndex
+  console.log(userWallet.address);
+
+  const psbt = new bitcoin.Psbt({ network: testnet });
+  const txfee = 1000;
   const sendAmount = withdrawal.amount - txfee;
+
+  // Obtener UTXOs de la dirección de la billetera del cliente
+  const utxosResponse = await axios.get(`https://blockstream.info/testnet/api/address/${userWallet.address}/utxo`);
+  const utxos = utxosResponse.data;
+
+  // Selecciona un UTXO adecuado
+  const selectedUtxo = utxos.find(utxo => utxo.value >= (sendAmount + txfee));
+
+  if (!selectedUtxo) {
+    console.error("No hay UTXOs suficientes para cubrir el monto del retiro.");
+    return;
+  }
+
+  psbt.addInput({
+    hash: selectedUtxo.txid,
+    index: selectedUtxo.vout,
+    nonWitnessUtxo: Buffer.from((await axios.get(`https://blockstream.info/testnet/api/tx/${selectedUtxo.txid}/hex`)).data, 'hex')
+  });
+
+  psbt.addOutput({
+    address: withdrawal.externalAddress,
+    value: sendAmount
+  });
+
+  // Derivar la clave privada de la semilla
   const root = bip32.fromSeed(seed, testnet);
-  const masterWalletAddress = bitcoin.payments.p2pkh({ pubkey: root.publicKey, network: testnet }).address;
-  const masterWalletPrivateKey = root.toWIF();
-  txb.addInput(masterWalletAddress, 0);
-  txb.addOutput(withdrawal.externalAddress, sendAmount);
-  const keyPair = bitcoin.ECPair.fromWIF(masterWalletPrivateKey, testnet);
-  txb.sign(0, keyPair);
-  const tx = txb.build().toHex();
+  const path = `m/44'/0'/0'/0/${addressIndex}`; // Asumiendo que estás usando el derivado BIP44. Ajusta según sea necesario.
+  const child = root.derivePath(path);
+  const keyPair = ECPair.fromPrivateKey(child.privateKey, { network: testnet });
+
+  psbt.signInput(0, keyPair);
+
+  psbt.finalizeAllInputs();
+  const tx = psbt.extractTransaction().toHex();
+
   const response = await axios.post('https://api.blockcypher.com/v1/btc/test3/txs/push', {
     tx: tx
   });
+
   if (response.data.errors) {
     console.error("Error al transmitir la transacción:", response.data.errors);
     return;
   }
-
-  // Crear transacción de retiro
-  const withdrawalTransaction = new Transaction({
-    fromWallet: userWallet._id,
-    toWallet: withdrawal.externalAddress, // Dirección externa proporcionada por el usuario
-    amount: withdrawal.amount,
-    status: 'completed',
-    type: 'withdrawal'
-  });
-  await withdrawalTransaction.save();
 
   if (withdrawal.externalAddress === userWallet.address) {
     userWallet.virtualBalance -= withdrawal.amount;
@@ -750,6 +781,7 @@ setInterval(async () => {
   }
   console.log(`Retiro procesado con éxito para el usuario ${withdrawal.userId} a la dirección ${withdrawal.externalAddress}`);
 }, PROCESS_INTERVAL);
+
 
 // Esta función devuelve la billetera desde donde provienen los fondos virtuales
 

@@ -23,6 +23,7 @@ const AuthForm = () => {
 
 
 
+
   const toggleForm = (formType) => {
     if (formType === 'login') {
       setIsLogin(true);
@@ -50,7 +51,7 @@ const AuthForm = () => {
 
   const registerUser = async (email, password) => {
     try {
-      const response = await axios.post('http://localhost:3001/register', { email, password });
+      await axios.post('http://localhost:3001/register', { email, password });
       setShowRegisterSuccessPopup(true); // Muestra el popup de registro exitoso
       loginUser(email, password); // Inicia sesión con los datos registrados
     } catch (error) {
