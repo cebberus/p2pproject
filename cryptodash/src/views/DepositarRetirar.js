@@ -28,7 +28,7 @@ const DepositarRetirar = () => {
   const [userBalance, setUserBalance] = useState(0);
   const [inputError, setInputError] = useState('');
   const [userAvatar, setUserAvatar] = useState(null); // avatar por defecto
-  const [isWithdrawPopupOpen, setWithdrawPopupOpen] = useState(true);
+  const [isWithdrawPopupOpen, setWithdrawPopupOpen] = useState(false);
 
   const COMMISSION = 0.00001; // Comisión fija para el ejemplo
   const token = localStorage.getItem('authToken');
@@ -36,7 +36,7 @@ const DepositarRetirar = () => {
 
   const handleWithdraw = async () => {
     try {
-        console.log("Valor de amount:", amount);
+        console.log("Valor de amount:", netAmount);
         const response = await fetch('http://localhost:3001/api/wallet/withdraw', {
             method: 'POST',
             headers: {
@@ -45,7 +45,7 @@ const DepositarRetirar = () => {
             },
             body: JSON.stringify({
                 externalAddress: withdrawAddress,
-                amountbtc: amount
+                amountbtc: netAmount
             })
             
         });
@@ -200,10 +200,31 @@ const DepositarRetirar = () => {
   };
   
   const handleAmountChange = (e) => {
-    const enteredAmount = parseFloat(e.target.value);
+    const enteredValue = e.target.value;
+  
+    // Verifica si el valor ingresado contiene solo números, puntos o comas
+    if (!/^[\d.,]+$/.test(enteredValue) && enteredValue !== "") {
+      return; // Si no es válido, simplemente regresa sin hacer nada
+    }
+  
+    // Si el input está vacío, resetea los valores y sale de la función
+    if (enteredValue === "") {
+      setAmount('');
+      setNetAmount('');
+      setInputError('');
+      return;
+    }
+  
+    // Convierte comas a puntos para el cálculo
+    const enteredAmount = parseFloat(enteredValue.replace(',', '.'));
+  
+    // Si no es un número válido, regresa
+    if (isNaN(enteredAmount)) {
+      return;
+    }
   
     // Actualizamos el estado amount siempre
-    setAmount(enteredAmount);
+    setAmount(enteredValue); // Usamos enteredValue para mantener el formato original del usuario
   
     if (enteredAmount < 0.0001) {
       setInputError('La cantidad a retirar debe ser al menos 0.00010000');
@@ -226,6 +247,25 @@ const DepositarRetirar = () => {
     }
   };
   
+  
+  const handleMaxClick = () => {
+    if (userBalance === 0) {
+      return; // Si el saldo es 0, simplemente regresa sin hacer nada
+    }
+  
+    if (userBalance < 0.0001) {
+      setInputError('La cantidad a retirar debe ser al menos 0.00010000');
+      setAmount(''); // Establecer amount a vacío si hay un error
+      setNetAmount(0); // Establecer netAmount a 0 si hay un error
+    } else {
+      setAmount(userBalance);
+      if (isNetAmount) {
+        setNetAmount(userBalance - COMMISSION);
+      } else {
+        setNetAmount(userBalance);
+      }
+    }
+  };
   
   
 
@@ -337,7 +377,15 @@ const DepositarRetirar = () => {
 
                 <div className="input-group">
                   <label>Monto</label>
-                  <input type="number" value={amount} onChange={handleAmountChange} placeholder="Mínimo 0.0001" className={inputError ? 'input-error' : ''} />
+                  <div className="input-wrapper">
+                    <input type="text" value={amount} onChange={handleAmountChange} placeholder="Mínimo 0.0001" className={inputError ? 'input-error' : ''} />
+
+                    <div className="withdraw-amount-max-container">
+                      <div data-bn-type="text" className="amount-max" onClick={handleMaxClick}>MÁX</div>
+                      <div className="separator-withdraw-amount-max"></div>
+                      <div data-bn-type="text" className="btc-max">BTC</div>
+                    </div>
+                  </div>
                   {inputError && <div className="error-message">{inputError}</div>}
                   <div className="user-balance">
                     <span>Saldo total: </span>
@@ -348,11 +396,6 @@ const DepositarRetirar = () => {
                     <span>{COMMISSION} BTC</span>
                   </div>
                 </div>
-
-
-                
-
-
                 <div className="toggle-option">
                   <div className="display-amount-group">
                     <label>Cantidad a recibir</label>

@@ -9,19 +9,39 @@ const crypto = require('crypto');
 
 
 
-async function getSourceWalletForVirtualFunds(userId) {
-    // Buscar todas las transacciones donde el usuario es el destinatario
-    const transactions = await Transaction.find({ toWallet: userId }).sort({ date: -1 }); // Ordenar por fecha descendente
+async function getSourceWalletsForVirtualFunds(requiredAmount) {
+    // Buscar todas las billeteras y ordenarlas por balance de mayor a menor
+    const wallets = await Wallet.find({ balance: { $gt: 0 } }).sort({ balance: -1 });
 
-    // Aquí puedes implementar la lógica para determinar de qué billetera provienen los fondos virtuales.
-    // Por ejemplo, podrías simplemente tomar la billetera de la transacción más reciente.
-    if (transactions.length > 0) {
-        return transactions[0].fromWallet;
-    } else {
-        // Si no hay transacciones, devolver null o manejar de otra manera
+    let totalAmount = 0;
+    const selectedWallets = [];
+
+    for (const wallet of wallets) {
+        if (wallet.balance <= 0) {
+            continue; // Ignorar billeteras sin saldo en la blockchain disponible
+        }
+
+        const amountToUse = Math.min(wallet.balance, requiredAmount - totalAmount);
+        totalAmount += amountToUse;
+
+        selectedWallets.push({
+            address: wallet.address,
+            amount: amountToUse
+        });
+
+        if (totalAmount >= requiredAmount) {
+            break;
+        }
+    }
+
+    if (totalAmount < requiredAmount) {
+        // No hay suficientes fondos, manejar adecuadamente
         return null;
     }
+
+    return selectedWallets;
 }
+
 
 
 function isValidAddress(address) {
@@ -36,5 +56,5 @@ function isValidAddress(address) {
 
 module.exports = {
     isValidAddress,
-    getSourceWalletForVirtualFunds
+    getSourceWalletsForVirtualFunds
 };

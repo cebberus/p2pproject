@@ -15,9 +15,9 @@ const bip32 = BIP32Factory(ecc);
 const testnet = bitcoin.networks.testnet;
 const ECPair = ECPairFactory.ECPairFactory(ecc);
 const { verifyDataWithForm} = require('./services/verificationidentity/verificationService');
-const { isValidAddress, getSourceWalletForVirtualFunds } = require('./services/bitcoin/walletService');
 const fs = require('fs');
 const path = require('path');
+const { v4: uuidv4 } = require('uuid');
 
 
 
@@ -81,14 +81,24 @@ const UserSchema = new mongoose.Schema({
 });
 const User = mongoose.model('User', UserSchema);
 
-function generarNombreDeUsuario() {
+async function generarNombreDeUsuario() {
   const caracteres = 'abcdefghijklmnopqrstuvwxyz0123456789';
-  let resultado = 'user-';
-  for (let i = 0; i < 5; i++) {
-      resultado += caracteres.charAt(Math.floor(Math.random() * caracteres.length));
+  let resultado;
+  let userExists = true;
+
+  while (userExists) {
+    resultado = 'user-';
+    for (let i = 0; i < 7; i++) {
+        resultado += caracteres.charAt(Math.floor(Math.random() * caracteres.length));
+    }
+
+    // Verificar si el nombre de usuario ya existe
+    userExists = await User.findOne({ nombreDeUsuario: resultado });
   }
+
   return resultado;
 }
+
 
 /////////////////////////////////ENDPOINTS TEMPORALES/////////////////////////////////
 
@@ -108,9 +118,8 @@ const Verification = mongoose.model('Verification', VerificationSchema);
 
 
 const WalletSchema = new mongoose.Schema({
-  userId: String,
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   address: String,
-  privateKey: String,
   balance: Number, // Este es el saldo en la blockchain
   virtualBalance: Number,
   addressIndex: Number, // Este es el saldo "virtual" en la plataforma
@@ -206,7 +215,7 @@ app.post('/login', async (req, res) => {
   }
 
   // Crear un token JWT
-  const token = jwt.sign({ userId: user._id }, 'SECRET_KEY', { expiresIn: '1h' });
+  const token = jwt.sign({ userId: user._id }, 'SECRET_KEY', { expiresIn: '4h' });
 
   res.json({ token, userId: user._id, email: user.email, verificationStatus: user.verificationStatus }); // Cambio aquí
 });
@@ -424,13 +433,56 @@ app.post('/verify', verifyToken, async (req, res) => {
 });
 
 //////////////////////////////////////////////////////////// BITCOIN OPERATIONS ///////////////////////////////////////////////////////////////////////////////////
+async function getSourceWalletsForVirtualFunds(requiredAmount) {
+  // Buscar todas las billeteras y ordenarlas por balance de mayor a menor
+  const wallets = await Wallet.find({ balance: { $gt: 0 } }).sort({ balance: -1 });
+
+  let totalAmount = 0;
+  const selectedWallets = [];
+
+  for (const wallet of wallets) {
+      if (wallet.balance <= 0) {
+          continue; // Ignorar billeteras sin saldo en la blockchain disponible
+      }
+
+      const amountToUse = Math.min(wallet.balance, requiredAmount - totalAmount);
+      totalAmount += amountToUse;
+
+      selectedWallets.push({
+          address: wallet.address,
+          amount: amountToUse
+      });
+
+      if (totalAmount >= requiredAmount) {
+          break;
+      }
+  }
+
+  if (totalAmount < requiredAmount) {
+      // No hay suficientes fondos, manejar adecuadamente
+      return null;
+  }
+
+  return selectedWallets;
+}
+
+
+
+function isValidAddress(address) {
+  try {
+      bitcoin.address.toOutputScript(address, testnet);
+      return true;
+  } catch (e) {
+      return false;
+  }
+}
 
 const WebSocket = require('ws');
 const trackWS = () => {
   const ws = new WebSocket('wss://mempool.space/testnet/api/v1/ws');
   const interval = setInterval(function ping() {
     ws.ping();
-  }, 30000);
+  }, 20000);
 
   ws.on('open', function open() {
     console.log('ws opened');
@@ -625,49 +677,63 @@ app.get('/api/wallet/balance', verifyToken, async (req, res) => {
 
 
 app.post('/api/wallet/send-receive', verifyToken, async (req, res) => {
-  const { senderAddress, recipientAddress, amount } = req.body;
+  const { senderAddress, recipientIdentifier, amount } = req.body;
+  
   const senderWallet = senderAddress ? await Wallet.findOne({ address: senderAddress }) : await Wallet.findOne({ userId: req.user.userId });
   if (!senderWallet) {
     return res.status(404).json({ error: 'Billetera del remitente no encontrada' });
   }
-  const recipientWallet = await Wallet.findOne({ address: recipientAddress });
+
+  let recipientWallet;
+  if (recipientIdentifier.includes('@')) { // Si es un correo
+    const recipientUser = await User.findOne({ email: recipientIdentifier });
+    recipientWallet = recipientUser ? await Wallet.findOne({ userId: recipientUser._id }) : null;
+  } else {
+    // Intenta encontrar por dirección de billetera
+    recipientWallet = await Wallet.findOne({ address: recipientIdentifier });
+    if (!recipientWallet) {
+      // Si no se encuentra, intenta por nombre de usuario
+      const recipientUser = await User.findOne({ nombreDeUsuario: recipientIdentifier });
+      recipientWallet = recipientUser ? await Wallet.findOne({ userId: recipientUser._id }) : null;
+    }
+  }
+
   if (!recipientWallet) {
-    return res.status(400).json({ error: 'La dirección del destinatario no pertenece a un usuario de la plataforma' });
+    return res.status(400).json({ error: 'El identificador del destinatario no pertenece a un usuario de la plataforma' });
   }
+
   const totalBalance = senderWallet.balance + senderWallet.virtualBalance;
-  if (totalBalance < amount) {
-    return res.status(400).json({ error: 'Fondos insuficientes en la billetera del remitente' });
-  }
-  if (senderWallet.balance >= amount) {
-    senderWallet.balance -= amount;
+  if (totalBalance >= amount) {
+    senderWallet.virtualBalance -= amount;
     recipientWallet.virtualBalance += amount;
   } else {
-    const amountFromBlockchain = senderWallet.balance;
-    const amountFromVirtual = amount - amountFromBlockchain;
-    senderWallet.balance = 0;
-    senderWallet.virtualBalance -= amountFromVirtual;
-    recipientWallet.virtualBalance += amount;
+    return res.status(400).json({ error: 'Fondos insuficientes en la billetera del remitente' });
   }
+
   await senderWallet.save();
   await recipientWallet.save();
 
+  const InTxID = uuidv4(); // Genera el InTxID
+
   // Transacción para el remitente
   const sendTransaction = new InternalTransaction({
+    InTxID: InTxID,
     fromWallet: senderWallet._id,
     toWallet: recipientWallet._id,
     amount: amount,
     status: 'completed',
-    type: 'send' // Es una transacción de envío
+    type: 'send'
   });
   await sendTransaction.save();
 
   // Transacción para el destinatario
   const receiveTransaction = new InternalTransaction({
+    InTxID: InTxID,
     fromWallet: senderWallet._id,
     toWallet: recipientWallet._id,
     amount: amount,
     status: 'completed',
-    type: 'receive' // Es una transacción de recepción
+    type: 'receive'
   });
   await receiveTransaction.save();
 
@@ -675,47 +741,107 @@ app.post('/api/wallet/send-receive', verifyToken, async (req, res) => {
 });
 
 
+
+
 const withdrawalQueue = [];
+const APP_FEE = 200;
+const txfee = 800;
+const totalFee = APP_FEE + txfee;
+const APP_WALLET_ADDRESS = 'tb1qhsa0mwu93mzg7lppzm4x8excmvfr2ss6yn8pn4';
 
 app.post('/api/wallet/withdraw', verifyToken, async (req, res) => {
+  console.log("Solicitud de retiro iniciada para el usuario:", req.user.userId);
+
   const { externalAddress, amountbtc } = req.body;
+  console.log("Dirección externa proporcionada:", externalAddress);
+
   if (!isValidAddress(externalAddress)) {
     return res.status(400).json({ error: 'Dirección externa inválida' });
   }
   const parsedAmountbtc = parseFloat(amountbtc);
+  console.log("Cantidad de BTC solicitada para retiro:", parsedAmountbtc);
   if (isNaN(parsedAmountbtc)) {
       return res.status(400).json({ error: 'El valor de amountbtc no es un número válido'});
   }
   const amount = parsedAmountbtc * 100000000;
   const userWallet = await Wallet.findOne({ userId: req.user.userId });
   const totalBalance = userWallet.balance + userWallet.virtualBalance;
+  console.log("Balance actual del usuario:", userWallet.balance);
+  console.log("Balance virtual del usuario:", userWallet.virtualBalance);
+  console.log("Balance total del usuario:", totalBalance);
+
   if (totalBalance < amount) {
     return res.status(400).json({ error: 'Fondos insuficientes' });
   }
+
+  const withdrawal = {
+    address: userWallet.address,
+    externalAddress: externalAddress,
+    amount: amount,
+    inputs: []
+  };
+
   if (userWallet.balance >= amount) {
-    withdrawalQueue.push({
-      userId: req.user.userId,
-      externalAddress: externalAddress,
+    withdrawal.inputs.push({
+      address: userWallet.address,
       amount: amount
     });
-    res.json({ message: 'Retiro programado con éxito. Será procesado pronto.' });
+    withdrawalQueue.push(withdrawal);
+    return res.json({ message: 'Retiro programado con éxito. Será procesado pronto.' });
   } else {
     const amountFromBlockchain = userWallet.balance;
     const amountFromVirtual = amount - amountFromBlockchain;
-    const sourceWallet = await getSourceWalletForVirtualFunds(req.user.userId); // Obtener la billetera fuente de los fondos virtuales
-    withdrawalQueue.push({
-      userId: sourceWallet.userId, // Usar el ID del usuario fuente
-      externalAddress: userWallet.address,
-      amount: amountFromVirtual
-    });
-    withdrawalQueue.push({
-      userId: req.user.userId,
-      externalAddress: externalAddress,
-      amount: amountFromBlockchain
-    });
-    res.json({ message: 'Retiro programado con éxito. Será procesado pronto.' });
+    const amountFromVirtualWithFee = amountFromVirtual + totalFee;
+    userWallet.virtualBalance -= amountFromVirtualWithFee;
+    await userWallet.save();
+    
+    if (amountFromBlockchain > 0 && userWallet.balance > 0) {
+      withdrawal.inputs.push({
+        address: userWallet.address,
+        amount: amountFromBlockchain
+      });
+    }
+    const sourceWallets = await getSourceWalletsForVirtualFunds(amountFromVirtual);
+    console.log("Determinando la fuente de los fondos para el retiro...");
+    let remainingAmount = amountFromVirtual;
+    for (const wallet of sourceWallets) {
+        if (wallet.amount <= remainingAmount) {
+            withdrawal.inputs.push({
+                address: wallet.address,
+                amount: wallet.amount
+            });
+            remainingAmount -= wallet.amount;
+        } else {
+            // Si la billetera tiene más BTC de los que necesitamos, solo tomamos lo que necesitamos
+            withdrawal.inputs.push({
+                address: wallet.address,
+                amount: remainingAmount
+            });
+            break; // Ya hemos alcanzado el monto requerido, por lo que podemos salir del bucle
+        }
+    }
+    withdrawalQueue.push(withdrawal);
+    return res.json({ message: 'Retiro programado con éxito. Será procesado pronto.' });
   }
 });
+
+function selectUtxos(utxos, targetAmount) {
+  let selectedUtxos = [];
+  let totalSelectedAmount = 0;
+
+  // Ordena los UTXOs de menor a mayor
+  const sortedUtxos = utxos.sort((a, b) => a.value - b.value);
+
+  for (const utxo of sortedUtxos) {
+    if (totalSelectedAmount >= targetAmount) {
+      break;
+    }
+    selectedUtxos.push(utxo);
+    totalSelectedAmount += utxo.value;
+  }
+
+  return { selectedUtxos, totalSelectedAmount };
+}
 
 const PROCESS_INTERVAL = 10000;
 setInterval(async () => {
@@ -723,67 +849,117 @@ setInterval(async () => {
     return;
   }
   const withdrawal = withdrawalQueue.shift();
-  const userWallet = await Wallet.findOne({ userId: withdrawal.userId });
-  const addressIndex = userWallet.addressIndex
-  console.log(userWallet.address);
-
   const psbt = new bitcoin.Psbt({ network: testnet });
-  const txfee = 1000;
-  const sendAmount = withdrawal.amount - txfee;
+  console.log(withdrawal);
 
-  // Obtener UTXOs de la dirección de la billetera del cliente
-  const utxosResponse = await axios.get(`https://blockstream.info/testnet/api/address/${userWallet.address}/utxo`);
-  const utxos = utxosResponse.data;
+  let allSelectedUtxos = [];
+  let totalSelectedAmount = 0;
 
-  // Selecciona un UTXO adecuado
-  const selectedUtxo = utxos.find(utxo => utxo.value >= (sendAmount + txfee));
+  // 1. Añade todos los inputs:
+  for (const input of withdrawal.inputs) {
+    const userWallet = await Wallet.findOne({ address: input.address });
 
-  if (!selectedUtxo) {
-    console.error("No hay UTXOs suficientes para cubrir el monto del retiro.");
+    // Obtener UTXOs de la dirección de la billetera del cliente
+    const utxosResponse = await axios.get(`https://mempool.space/testnet/api/address/${userWallet.address}/utxo`);
+    const utxos = utxosResponse.data;
+    console.log("Total de UTXOs disponibles:", utxos.length);
+    console.log("UTXOs disponibles para la dirección", userWallet.address, ":", utxos);
+
+    // Selecciona un UTXO adecuado
+    const { selectedUtxos, totalSelectedAmount: selectedAmount } = selectUtxos(utxos, withdrawal.amount + txfee - totalSelectedAmount);
+
+    allSelectedUtxos = allSelectedUtxos.concat(selectedUtxos);
+    totalSelectedAmount += selectedAmount;
+
+    if (totalSelectedAmount >= withdrawal.amount + txfee) {
+      break;
+    }
+  }
+
+  if (totalSelectedAmount < withdrawal.amount + txfee) {
+    console.error("No hay UTXOs suficientes para cubrir el monto del retiro y la comisión.");
     return;
   }
 
-  psbt.addInput({
-    hash: selectedUtxo.txid,
-    index: selectedUtxo.vout,
-    nonWitnessUtxo: Buffer.from((await axios.get(`https://blockstream.info/testnet/api/tx/${selectedUtxo.txid}/hex`)).data, 'hex')
+  for (const utxo of allSelectedUtxos) {
+    if (!utxo) {
+      console.error("Error: UTXO no definido.");
+      continue;
+    }
+
+    psbt.addInput({
+      hash: utxo.txid,
+      index: utxo.vout,
+      nonWitnessUtxo: Buffer.from((await axios.get(`https://mempool.space/testnet/api/tx/${utxo.txid}/hex`)).data, 'hex')
+    });
+  }
+
+  // 2. Añade todos los outputs:
+  const sendAmount = totalSelectedAmount - txfee;
+  psbt.addOutput({
+    address: withdrawal.externalAddress,
+    value: withdrawal.amount
   });
 
   psbt.addOutput({
-    address: withdrawal.externalAddress,
-    value: sendAmount
+    address: APP_WALLET_ADDRESS,
+    value: APP_FEE
   });
 
-  // Derivar la clave privada de la semilla
-  const root = bip32.fromSeed(seed, testnet);
-  const path = `m/44'/0'/0'/0/${addressIndex}`; // Asumiendo que estás usando el derivado BIP44. Ajusta según sea necesario.
-  const child = root.derivePath(path);
-  const keyPair = ECPair.fromPrivateKey(child.privateKey, { network: testnet });
+  if (sendAmount > withdrawal.amount + APP_FEE) {
+    // Si hay un cambio, devolverlo a la dirección original del usuario
+    const userWallet = await Wallet.findOne({ address: withdrawal.address });
+    psbt.addOutput({
+      address: userWallet.address,
+      value: sendAmount - withdrawal.amount - APP_FEE
+    });
+  }
 
-  psbt.signInput(0, keyPair);
+  // 3. Firma todos los inputs:
+  let inputIndex = 0;
+  for (const input of withdrawal.inputs) {
+    const inputWallet = await Wallet.findOne({ address: input.address });
+    const addressIndex = inputWallet.addressIndex;
 
+    // Derivar la clave privada de la semilla
+    const root = bip32.fromSeed(seed, testnet);
+    const path = `m/44'/0'/0'/0/${addressIndex}`;
+    const child = root.derivePath(path);
+    const keyPair = ECPair.fromPrivateKey(child.privateKey);
+
+    psbt.signInput(inputIndex, keyPair);
+    inputIndex++;
+  }
+
+
+  // 4. Finaliza y extrae la transacción:
+  console.log("Finalizando PSBT...");
   psbt.finalizeAllInputs();
   const tx = psbt.extractTransaction().toHex();
+  console.log("Transacción en formato hex:", tx);
 
-  const response = await axios.post('https://api.blockcypher.com/v1/btc/test3/txs/push', {
-    tx: tx
-  });
-
-  if (response.data.errors) {
-    console.error("Error al transmitir la transacción:", response.data.errors);
+  try {
+    const response = await axios.post('https://mempool.space/testnet/api/tx', tx, {
+      headers: {
+        'Content-Type': 'text/plain',
+      },
+    });
+    console.log("Respuesta al enviar la transacción:", response.data);
+  } catch (error) {
+    console.error("Error al transmitir la transacción:", error.response.data);
     return;
   }
-
-  if (withdrawal.externalAddress === userWallet.address) {
-    userWallet.virtualBalance -= withdrawal.amount;
-    await userWallet.save();
-    console.log(`Virtual balance actualizado para el usuario ${withdrawal.userId}. Nuevo virtual balance: ${userWallet.virtualBalance}`);
-  }
-  console.log(`Retiro procesado con éxito para el usuario ${withdrawal.userId} a la dirección ${withdrawal.externalAddress}`);
+  
+  console.log(`Retiro procesado con éxito para la dirección ${withdrawal.externalAddress}`);
 }, PROCESS_INTERVAL);
 
 
-// Esta función devuelve la billetera desde donde provienen los fondos virtuales
+
+
+
+
+
+
 
 
 
