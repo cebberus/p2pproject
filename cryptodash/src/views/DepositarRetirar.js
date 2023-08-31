@@ -222,7 +222,6 @@ const DepositarRetirar = () => {
     if (isNaN(enteredAmount)) {
       return;
     }
-  
     // Actualizamos el estado amount siempre
     setAmount(enteredValue); // Usamos enteredValue para mantener el formato original del usuario
   
@@ -259,11 +258,13 @@ const DepositarRetirar = () => {
       setNetAmount(0); // Establecer netAmount a 0 si hay un error
     } else {
       setAmount(userBalance);
+      let calculatedNetAmount;
       if (isNetAmount) {
-        setNetAmount(userBalance - COMMISSION);
+        calculatedNetAmount = userBalance - COMMISSION;
       } else {
-        setNetAmount(userBalance);
+        calculatedNetAmount = userBalance;
       }
+      setNetAmount(parseFloat(calculatedNetAmount.toFixed(8)));
     }
   };
   

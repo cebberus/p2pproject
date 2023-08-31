@@ -1,4 +1,5 @@
 //server.js
+require('dotenv').config;
 const axios = require('axios');
 const express = require('express');
 const bodyParser = require('body-parser');
@@ -433,6 +434,8 @@ app.post('/verify', verifyToken, async (req, res) => {
 });
 
 //////////////////////////////////////////////////////////// BITCOIN OPERATIONS ///////////////////////////////////////////////////////////////////////////////////
+
+
 async function getSourceWalletsForVirtualFunds(requiredAmount) {
   // Buscar todas las billeteras y ordenarlas por balance de mayor a menor
   const wallets = await Wallet.find({ balance: { $gt: 0 } }).sort({ balance: -1 });
@@ -482,7 +485,7 @@ const trackWS = () => {
   const ws = new WebSocket('wss://mempool.space/testnet/api/v1/ws');
   const interval = setInterval(function ping() {
     ws.ping();
-  }, 20000);
+  }, 30000);
 
   ws.on('open', function open() {
     console.log('ws opened');
@@ -497,6 +500,11 @@ const trackWS = () => {
     trackWS();
   });
 
+  ws.on('error', function error(err) {
+    console.error('WebSocket error:', err);
+  });
+
+
   return ws;
 };
 
@@ -510,59 +518,52 @@ const ws = trackWS();
 ws.on('message', async function incoming(data) {
   try {
     const res = JSON.parse(data.toString());
-    console.log(JSON.stringify(res, null, 3));
 
     if (res["address-transactions"] && res["address-transactions"][0]) {
-      // Verificar transacciones entrantes
-      if (res["address-transactions"][0].vout) {
-        for (let vout of res["address-transactions"][0].vout) {
-          const wallet = await Wallet.findOne({ address: vout.scriptpubkey_address });
-          if (wallet) {
-            // Actualizar el balance de la billetera
-            wallet.balance += vout.value;
-            await wallet.save();
-            console.log(`Balance actualizado para la dirección ${vout.scriptpubkey_address}. Nuevo balance: ${wallet.balance}`);
-            
-            const fromWalletAddress = res["address-transactions"][0].vin && res["address-transactions"][0].vin[0] ? res["address-transactions"][0].vin[0].prevout.scriptpubkey_address : null; // Asumiendo un solo input por simplicidad
-            const fromWallet = fromWalletAddress ? await Wallet.findOne({ address: fromWalletAddress }) : null;
+      const transaction = res["address-transactions"][0];
 
-            const extTransaction = new ExternalTransaction({
-              TxID: res["address-transactions"][0].txid,
-              fromWallet: fromWallet ? fromWallet.address : fromWalletAddress, // Usar la dirección directamente
-              toWallet: wallet.address, // Usar la dirección directamente
-              amount: vout.value,
-              status: "completed",
-              type: "deposit"
-            });
-            await extTransaction.save();
-          }
+      // Verificar si la transacción ya ha sido registrada
+      const existingTransaction = await ExternalTransaction.findOne({ TxID: transaction.txid });
+      if (existingTransaction) {
+        console.log(`Transacción con TxID ${transaction.txid} ya ha sido registrada. Omitiendo...`);
+        return; // Salir del manejador de mensajes si la transacción ya existe
+      }
+
+      // Procesar todos los inputs (vin)
+      for (let vin of transaction.vin) {
+        const fromWalletAddress = vin.prevout.scriptpubkey_address;
+        const fromWallet = await Wallet.findOne({ address: fromWalletAddress });
+
+        if (fromWallet) {
+          // Actualizar el balance de la billetera de origen
+          fromWallet.balance -= vin.prevout.value;
+          await fromWallet.save();
+          console.log(`Balance actualizado para la dirección ${fromWalletAddress} debido a una transacción saliente. Nuevo balance: ${fromWallet.balance}`);
         }
       }
 
-      // Verificar transacciones salientes
-      if (res["address-transactions"][0].vin) {
-        for (let vin of res["address-transactions"][0].vin) {
-          const wallet = await Wallet.findOne({ address: vin.prevout.scriptpubkey_address });
-          if (wallet) {
-            // Actualizar el balance de la billetera
-            wallet.balance -= vin.prevout.value;
-            await wallet.save();
-            console.log(`Balance actualizado para la dirección ${vin.prevout.scriptpubkey_address} debido a una transacción saliente. Nuevo balance: ${wallet.balance}`);
-            
-            const toWalletAddress = res["address-transactions"][0].vout && res["address-transactions"][0].vout[0] ? res["address-transactions"][0].vout[0].scriptpubkey_address : null; // Asumiendo un solo output por simplicidad
-            const toWallet = toWalletAddress ? await Wallet.findOne({ address: toWalletAddress }) : null;
+      // Procesar todos los outputs (vout)
+      for (let vout of transaction.vout) {
+        const toWalletAddress = vout.scriptpubkey_address;
+        const toWallet = await Wallet.findOne({ address: toWalletAddress });
 
-            const extTransaction = new ExternalTransaction({
-              TxID: res["address-transactions"][0].txid,
-              fromWallet: wallet.address, // Usar la dirección directamente
-              toWallet: toWallet ? toWallet.address : toWalletAddress, // Usar la dirección directamente
-              amount: vin.prevout.value,
-              status: "completed",
-              type: "withdrawal"
-            });
-            await extTransaction.save();
-          }
+        if (toWallet) {
+          // Actualizar el balance de la billetera de destino
+          toWallet.balance += vout.value;
+          await toWallet.save();
+          console.log(`Balance actualizado para la dirección ${toWalletAddress}. Nuevo balance: ${toWallet.balance}`);
         }
+
+        // Registrar la transacción
+        const extTransaction = new ExternalTransaction({
+          TxID: transaction.txid,
+          fromWallet: transaction.vin[0].prevout.scriptpubkey_address, // Esto asume que todos los inputs provienen de la misma dirección, lo cual puede no ser cierto
+          toWallet: toWalletAddress,
+          amount: vout.value,
+          status: "completed",
+          type: toWallet ? "deposit" : "withdrawal"
+        });
+        await extTransaction.save();
       }
     }
   } catch (error) {
@@ -576,18 +577,24 @@ const trackExistingWallets = async () => {
   try {
     const allWallets = await Wallet.find({});
     const addresses = allWallets.map(wallet => wallet.address);
-    addresses.forEach(address => {
-      ws.send(JSON.stringify({ 'track-address': address }));
-    });
-    console.log("Rastreando direcciones existentes:", addresses);
+    
+    for (const address of addresses) {
+      if (ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({ 'track-address': address }));
+        console.log(`Rastreando dirección: ${address}`);
+        await sleep(500); // Espera medio segundo antes de rastrear la siguiente dirección
+      } else {
+        console.error(`WebSocket no está en estado OPEN. Estado actual: ${ws.readyState}`);
+        break;
+      }
+    }
   } catch (error) {
     console.error("Error al rastrear direcciones existentes:", error);
   }
 };
 
 // El resto de tu código sigue igual...
-
-const MASTER_SEED_PHRASE = 'genre near parrot vocal demand basic slice leader portion begin favorite change';
+const MASTER_SEED_PHRASE='genre near parrot vocal demand basic slice leader portion begin favorite change'
 const seed = bip39.mnemonicToSeedSync(MASTER_SEED_PHRASE);
 
 app.post('/api/createwallet', verifyToken, async (req, res) => {
@@ -825,7 +832,7 @@ app.post('/api/wallet/withdraw', verifyToken, async (req, res) => {
   }
 });
 
-function selectUtxos(utxos, targetAmount) {
+function selectUtxos(utxos, targetAmount,walletAddress) {
   let selectedUtxos = [];
   let totalSelectedAmount = 0;
 
@@ -836,6 +843,7 @@ function selectUtxos(utxos, targetAmount) {
     if (totalSelectedAmount >= targetAmount) {
       break;
     }
+    utxo.address = walletAddress;
     selectedUtxos.push(utxo);
     totalSelectedAmount += utxo.value;
   }
@@ -866,7 +874,7 @@ setInterval(async () => {
     console.log("UTXOs disponibles para la dirección", userWallet.address, ":", utxos);
 
     // Selecciona un UTXO adecuado
-    const { selectedUtxos, totalSelectedAmount: selectedAmount } = selectUtxos(utxos, withdrawal.amount + txfee - totalSelectedAmount);
+    const { selectedUtxos, totalSelectedAmount: selectedAmount } = selectUtxos(utxos, withdrawal.amount + txfee - totalSelectedAmount, userWallet.address);
 
     allSelectedUtxos = allSelectedUtxos.concat(selectedUtxos);
     totalSelectedAmount += selectedAmount;
@@ -886,11 +894,15 @@ setInterval(async () => {
       console.error("Error: UTXO no definido.");
       continue;
     }
+    console.log("Agregando UTXO al PSBT:", utxo);
+
+    const txHex = (await axios.get(`https://mempool.space/testnet/api/tx/${utxo.txid}/hex`)).data;
+    const txBuffer = Buffer.from(txHex, 'hex');
 
     psbt.addInput({
       hash: utxo.txid,
       index: utxo.vout,
-      nonWitnessUtxo: Buffer.from((await axios.get(`https://mempool.space/testnet/api/tx/${utxo.txid}/hex`)).data, 'hex')
+      nonWitnessUtxo: txBuffer
     });
   }
 
@@ -915,10 +927,12 @@ setInterval(async () => {
     });
   }
 
-  // 3. Firma todos los inputs:
+// 3. Firma cada UTXO individualmente:
   let inputIndex = 0;
-  for (const input of withdrawal.inputs) {
-    const inputWallet = await Wallet.findOne({ address: input.address });
+  for (const utxo of allSelectedUtxos) {
+    console.log("Firmando UTXO:", utxo);
+
+    const inputWallet = await Wallet.findOne({ address: utxo.address }); // Asumiendo que cada UTXO tiene una propiedad 'address'
     const addressIndex = inputWallet.addressIndex;
 
     // Derivar la clave privada de la semilla
@@ -929,6 +943,7 @@ setInterval(async () => {
 
     psbt.signInput(inputIndex, keyPair);
     inputIndex++;
+  
   }
 
 
